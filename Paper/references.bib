@@ -1,0 +1,269 @@
+% =====================================================================
+% references.bib  —  Tail-calibrated conformal deep-GP-EVT precipitation paper
+% Maintained alongside 00_improvement_roadmap.md and 01_method_and_experiments.md
+% NOTE: a few page numbers / co-author lists are marked "% VERIFY" — confirm
+% against the publisher version before final submission.
+% =====================================================================
+
+% ---- Conformal prediction (core + extremes) ----
+@article{pasche2025extreme,
+  author  = {Pasche, Olivier C. and Lam, Henry and Engelke, Sebastian},
+  title   = {Extreme Conformal Prediction: Reliable Intervals for High-Impact Events},
+  journal = {arXiv preprint},
+  year    = {2025},
+  note    = {arXiv:2505.08578; to appear in \emph{Extremes}},
+  doi     = {10.48550/arXiv.2505.08578}
+}
+
+@inproceedings{gibbs2021adaptive,
+  author    = {Gibbs, Isaac and Cand{\`e}s, Emmanuel J.},
+  title     = {Adaptive Conformal Inference Under Distribution Shift},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2021},
+  note      = {arXiv:2106.00170}
+}
+
+@inproceedings{romano2019cqr,
+  author    = {Romano, Yaniv and Patterson, Evan and Cand{\`e}s, Emmanuel J.},
+  title     = {Conformalized Quantile Regression},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2019}
+}
+
+% ---- Gaussian processes (deep / deep-kernel / multi-output) ----
+@book{rasmussen2006gpml,
+  author    = {Rasmussen, Carl Edward and Williams, Christopher K. I.},
+  title     = {Gaussian Processes for Machine Learning},
+  publisher = {MIT Press},
+  year      = {2006}
+}
+
+@inproceedings{damianou2013deep,
+  author    = {Damianou, Andreas C. and Lawrence, Neil D.},
+  title     = {Deep Gaussian Processes},
+  booktitle = {Proceedings of the 16th International Conference on Artificial
+               Intelligence and Statistics (AISTATS), PMLR 31},
+  year      = {2013},
+  note      = {arXiv:1211.0358}
+}
+
+@inproceedings{salimbeni2017doubly,
+  author    = {Salimbeni, Hugh and Deisenroth, Marc Peter},
+  title     = {Doubly Stochastic Variational Inference for Deep Gaussian Processes},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2017}
+}
+
+@inproceedings{wilson2016deepkernel,
+  author    = {Wilson, Andrew Gordon and Hu, Zhiting and Salakhutdinov, Ruslan
+               and Xing, Eric P.},
+  title     = {Deep Kernel Learning},
+  booktitle = {Proceedings of the 19th International Conference on Artificial
+               Intelligence and Statistics (AISTATS), PMLR 51},
+  year      = {2016}
+}
+
+@inproceedings{bonilla2008multitask,
+  author    = {Bonilla, Edwin V. and Chai, Kian Ming A. and Williams, Christopher K. I.},
+  title     = {Multi-task Gaussian Process Prediction},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2008}
+}
+
+@article{alvarez2012kernels,
+  author  = {{\'A}lvarez, Mauricio A. and Rosasco, Lorenzo and Lawrence, Neil D.},
+  title   = {Kernels for Vector-Valued Functions: A Review},
+  journal = {Foundations and Trends in Machine Learning},
+  volume  = {4},
+  number  = {3},
+  pages   = {195--266},
+  year    = {2012}
+}
+
+% ---- Extreme value theory + deep learning for extremes ----
+@book{coles2001evt,
+  author    = {Coles, Stuart},
+  title     = {An Introduction to Statistical Modeling of Extreme Values},
+  publisher = {Springer},
+  year      = {2001}
+}
+
+@inproceedings{galib2022deepextrema,
+  author    = {Galib, Asadullah Hill and McDonald, Andrew and Wilson, Tyler
+               and Luo, Lifeng and Tan, Pang-Ning},
+  title     = {DeepExtrema: A Deep Learning Approach for Forecasting Block
+               Maxima in Time Series Data},
+  booktitle = {Proceedings of the 31st International Joint Conference on
+               Artificial Intelligence (IJCAI)},
+  year      = {2022},
+  note      = {arXiv:2205.02441}
+}
+
+% ---- Two-part / hurdle models with dependence (the §3.2 extension) ----
+@article{olsen2001twopart,
+  author  = {Olsen, Maren K. and Schafer, Joseph L.},
+  title   = {A Two-Part Random-Effects Model for Semicontinuous Longitudinal Data},
+  journal = {Journal of the American Statistical Association},
+  volume  = {96},
+  number  = {454},
+  pages   = {730--745},
+  year    = {2001}
+}
+
+@article{heckman1979selection,
+  author  = {Heckman, James J.},
+  title   = {Sample Selection Bias as a Specification Error},
+  journal = {Econometrica},
+  volume  = {47},
+  number  = {1},
+  pages   = {153--161},
+  year    = {1979}
+}
+
+% ---- Proper scoring rules / forecast evaluation of extremes ----
+@article{gneiting2011threshold,
+  author  = {Gneiting, Tilmann and Ranjan, Roopesh},
+  title   = {Comparing Density Forecasts Using Threshold- and Quantile-Weighted
+             Scoring Rules},
+  journal = {Journal of Business \& Economic Statistics},
+  volume  = {29},
+  number  = {3},
+  pages   = {411--422},
+  year    = {2011}
+}
+
+@article{gneiting2007scoring,
+  author  = {Gneiting, Tilmann and Raftery, Adrian E.},
+  title   = {Strictly Proper Scoring Rules, Prediction, and Estimation},
+  journal = {Journal of the American Statistical Association},
+  volume  = {102},
+  number  = {477},
+  pages   = {359--378},
+  year    = {2007}
+}
+
+@article{lerch2017dilemma,
+  author  = {Lerch, Sebastian and Thorarinsdottir, Thordis L. and Ravazzolo,
+             Francesco and Gneiting, Tilmann},
+  title   = {Forecaster's Dilemma: Extreme Events and Forecast Evaluation},
+  journal = {Statistical Science},
+  volume  = {32},
+  number  = {1},
+  pages   = {106--127},
+  year    = {2017},
+  note    = {arXiv:1512.09244}
+}
+
+% =====================================================================
+% Additional references for Related Work (Sections 1-2)
+% =====================================================================
+
+% ---- Extreme-value theory / precipitation & hydrology ----
+@article{pickands1975,
+  author  = {Pickands, James},
+  title   = {Statistical Inference Using Extreme Order Statistics},
+  journal = {The Annals of Statistics},
+  volume  = {3}, number = {1}, pages = {119--131}, year = {1975}
+}
+
+@article{davison1990,
+  author  = {Davison, A. C. and Smith, Richard L.},
+  title   = {Models for Exceedances over High Thresholds},
+  journal = {Journal of the Royal Statistical Society: Series B},
+  volume  = {52}, number = {3}, pages = {393--442}, year = {1990}
+}
+
+@article{katz2002,
+  author  = {Katz, Richard W. and Parlange, Marc B. and Naveau, Philippe},
+  title   = {Statistics of Extremes in Hydrology},
+  journal = {Advances in Water Resources},
+  volume  = {25}, number = {8--12}, pages = {1287--1304}, year = {2002}
+}
+
+@article{cooley2007,
+  author  = {Cooley, Daniel and Nychka, Douglas and Naveau, Philippe},
+  title   = {Bayesian Spatial Modeling of Extreme Precipitation Return Levels},
+  journal = {Journal of the American Statistical Association},
+  volume  = {102}, number = {479}, pages = {824--840}, year = {2007}
+}
+
+% ---- Sparse / scalable Gaussian process inference ----
+@inproceedings{titsias2009,
+  author    = {Titsias, Michalis K.},
+  title     = {Variational Learning of Inducing Variables in Sparse Gaussian Processes},
+  booktitle = {Proceedings of the 12th International Conference on Artificial
+               Intelligence and Statistics (AISTATS), PMLR 5},
+  year      = {2009}
+}
+
+@inproceedings{hensman2013,
+  author    = {Hensman, James and Fusi, Nicol\`o and Lawrence, Neil D.},
+  title     = {Gaussian Processes for Big Data},
+  booktitle = {Proceedings of the 29th Conference on Uncertainty in
+               Artificial Intelligence (UAI)},
+  year      = {2013}
+}
+
+% ---- Conformal prediction (foundations / regression / beyond exchangeability) ----
+@book{vovk2005,
+  author    = {Vovk, Vladimir and Gammerman, Alexander and Shafer, Glenn},
+  title     = {Algorithmic Learning in a Random World},
+  publisher = {Springer}, year = {2005}
+}
+
+@article{lei2018,
+  author  = {Lei, Jing and G'Sell, Max and Rinaldo, Alessandro and
+             Tibshirani, Ryan J. and Wasserman, Larry},
+  title   = {Distribution-Free Predictive Inference for Regression},
+  journal = {Journal of the American Statistical Association},
+  volume  = {113}, number = {523}, pages = {1094--1111}, year = {2018}
+}
+
+@inproceedings{tibshirani2019,
+  author    = {Tibshirani, Ryan J. and Foygel Barber, Rina and
+               Cand\`es, Emmanuel J. and Ramdas, Aaditya},
+  title     = {Conformal Prediction Under Covariate Shift},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2019}
+}
+
+@inproceedings{xu2021,
+  author    = {Xu, Chen and Xie, Yao},
+  title     = {Conformal Prediction Interval for Dynamic Time-Series},
+  booktitle = {Proceedings of the 38th International Conference on Machine
+               Learning (ICML), PMLR 139},
+  year      = {2021}
+}
+
+% ---- Forecast calibration / proper scoring / decomposition ----
+@article{gneiting2007sharpness,
+  author  = {Gneiting, Tilmann and Balabdaoui, Fadoua and Raftery, Adrian E.},
+  title   = {Probabilistic Forecasts, Calibration and Sharpness},
+  journal = {Journal of the Royal Statistical Society: Series B},
+  volume  = {69}, number = {2}, pages = {243--268}, year = {2007}
+}
+
+@article{murphy1973,
+  author  = {Murphy, Allan H.},
+  title   = {A New Vector Partition of the Probability Score},
+  journal = {Journal of Applied Meteorology},
+  volume  = {12}, number = {4}, pages = {595--600}, year = {1973}
+}
+
+% ---- Deep-learning uncertainty quantification ----
+@inproceedings{lakshminarayanan2017,
+  author    = {Lakshminarayanan, Balaji and Pritzel, Alexander and Blundell, Charles},
+  title     = {Simple and Scalable Predictive Uncertainty Estimation Using
+               Deep Ensembles},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2017}
+}
+
+@inproceedings{gal2016,
+  author    = {Gal, Yarin and Ghahramani, Zoubin},
+  title     = {Dropout as a Bayesian Approximation: Representing Model
+               Uncertainty in Deep Learning},
+  booktitle = {Proceedings of the 33rd International Conference on Machine
+               Learning (ICML), PMLR 48},
+  year      = {2016}
+}

@@ -1,0 +1,989 @@
+\documentclass[11pt,a4paper]{article}
+
+% ============================================================================
+%  How Predictable Are Rare Precipitation Extremes?
+%  A Calibration-Aware Assessment for London
+%
+%  Predictability assessment + evaluation methodology. Results in
+%  ../04_prototype_results.md; figures built by figures/make_figs.py and
+%  figures/make_horizon_fig.py.
+%  Compile:  pdflatex main ; bibtex main ; pdflatex main ; pdflatex main
+% ============================================================================
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,bm}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage[round,authoryear]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+
+% ---- theorem environments ----
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+% ---- notation macros ----
+\newcommand{\Ind}{\mathcal{I}}                 % precipitation index
+\newcommand{\GP}{\mathcal{GP}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Normal}{\mathcal{N}}
+\newcommand{\GPD}{\mathrm{GPD}}
+\newcommand{\sigmoid}{\operatorname{sigmoid}}
+\newcommand{\softplus}{\operatorname{softplus}}
+\newcommand{\KL}{\mathrm{KL}}
+\newcommand{\bx}{\bm{x}}
+\newcommand{\bg}{\bm{g}}
+\newcommand{\bff}{\bm{f}}
+\newcommand{\bB}{\bm{B}}
+\newcommand{\bK}{\bm{K}}
+\newcommand{\bu}{\bm{u}}
+\newcommand{\bZ}{\bm{Z}}
+\newcommand{\Filt}{\mathcal{F}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\title{\bfseries How Predictable Are Rare Precipitation Extremes?\\
+A Calibration-Aware Assessment for London}
+\author{Fankai Dong \and Olatunji Johnson\\[0.3em]
+\small Department of Mathematics, University of Manchester}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+How predictable are rare precipitation extremes, and how should that
+predictability be measured? We address both questions with thirty years
+(1989--2018) of a standardised daily precipitation-extreme index for London,
+augmented with strictly antecedent ERA5 atmospheric drivers. Methodologically,
+we argue that rare-event forecasts must be judged by \emph{calibration-aware
+proper scores} relative to climatology --- not by discrimination metrics or by
+conformal coverage, which on its own can give a misleading impression of
+forecast quality --- and we assemble an
+evaluation protocol (Brier reliability/resolution decomposition, threshold- and
+quantile-weighted CRPS, skill scores, bootstrap confidence intervals, and
+multi-split robustness) that guards against the single-seed and
+quantile-selection pitfalls that inflate apparent skill. Empirically, across a
+bake-off of models from logistic regression to a deep Gaussian-process
+extreme-value hurdle, we find that (i) \textbf{simple calibrated models
+outperform the elaborate ones}, and the choice of response distribution
+dominates model class; (ii) \textbf{occurrence} of an extreme is weakly but
+genuinely predictable from antecedent state (led by convective-instability and
+circulation indices); and (iii) \textbf{the magnitude of the largest events}
+carries weak but robust predictability tied to antecedent convective instability
+(CAPE/CIN), with a continuous-ranked-probability skill over climatology whose
+bootstrap interval excludes zero across four independent train/test splits. The
+effects are small --- precipitation extremes are intrinsically hard --- but
+real, physically grounded, and rigorously established.
+\end{abstract}
+
+\noindent\textbf{Keywords:} predictability; extreme-value theory; proper scoring
+rules; calibration; precipitation extremes; convective instability.
+
+% ===========================================================================
+\section{Introduction}\label{sec:intro}
+% ===========================================================================
+
+Extreme precipitation is among the most damaging natural hazards facing
+temperate cities. Short, intense rainfall episodes trigger surface-water and
+river flooding, disrupt transport, overwhelm drainage, and impose large and
+unevenly distributed economic and social costs. In London such events occur on
+only a small fraction of days, yet a single episode can cause disproportionate
+harm, and both observational records and climate projections indicate that the
+frequency and intensity of heavy rainfall are increasing \citep{ipcc2021}.
+Skilful and, above
+all, \emph{trustworthy} early warning of these events would let emergency
+managers, infrastructure operators, and insurers act pre-emptively. This
+motivates probabilistic forecasts of extreme precipitation at horizons of days
+to weeks ahead.
+
+The statistical obstacles are severe. Extreme days are rare --- typically
+$1$--$5\%$ of the record --- so a model that simply predicts ``no extreme'' is
+accurate yet useless, and conventional accuracy is the wrong yardstick. The
+daily precipitation index is zero-inflated, strongly right-skewed, and
+heavy-tailed, violating the Gaussian assumptions underlying standard regression.
+The observational record is short relative to the rarity of the events, leaving
+few positive examples from which to learn, and the day-to-day persistence of
+extremes is limited, so intrinsic predictability is modest. Together these
+features cap raw forecast \emph{skill}, a ceiling any honest treatment must
+confront rather than obscure.
+
+We argue that, precisely because raw predictability is limited, the decisive
+quality of a forecast in this setting is not discrimination but
+\emph{calibration}: whether the issued probabilities can be trusted. A forecast
+that assigns a $5\%$ probability to an extreme is useful for decision-making
+only if extremes do occur on about $5\%$ of such days; an overconfident forecast
+that systematically overstates rare-event probabilities causes false alarms and
+wasted resources, while an underconfident one breeds complacency. The
+appropriate goal is therefore to \emph{maximise sharpness subject to
+calibration} \citep{gneiting2007sharpness}: to be as informative as the data
+allow while remaining honest. Calibration matters most exactly where it is
+hardest to achieve --- in the tail --- and evaluating it there is itself subtle,
+as the \emph{forecaster's dilemma} makes clear \citep{lerch2017dilemma}.
+
+No existing methodology delivers calibrated, guaranteed tail probabilities for
+rare-event forecasting, because the three relevant tools each supply only part
+of the answer. \emph{Extreme-value theory} (EVT) furnishes asymptotically
+justified tail models, but is most often used descriptively --- for return
+levels or non-stationary tail regression --- rather than for flexible,
+covariate-driven probabilistic forecasting, and it offers no finite-sample
+coverage guarantee \citep{coles2001evt,davison1990}. \emph{Flexible machine
+learning}, including deep models and Gaussian processes, captures non-linear
+dependence on atmospheric predictors and yields predictive distributions, but
+those distributions are typically miscalibrated in the tail and come with no
+guarantee \citep{galib2022deepextrema,lakshminarayanan2017}. \emph{Conformal
+prediction} provides distribution-free, finite-sample coverage, but its standard
+form under-covers the tail --- the relevant high quantile cannot be resolved
+from a finite calibration set --- and assumes exchangeability, which daily time
+series violate \citep{gibbs2021adaptive,pasche2025extreme}. Moreover, essentially
+all two-part (hurdle) forecasters assume that the \emph{occurrence} of an extreme
+and its \emph{intensity} are conditionally independent, discarding the abundant
+occurrence data that could inform the data-starved tail.
+
+Rather than advocate a single model, we therefore ask a more basic pair of
+questions --- \emph{how predictable are these extremes, and how should that
+predictability be measured?} --- and answer them with a careful evaluation
+protocol and a bake-off of models spanning logistic regression, zero-inflated
+distributional regressions (log-normal, gamma, and the threshold-free extended
+generalised Pareto distribution), and a deep Gaussian-process extreme-value
+hurdle with conformal calibration.
+
+\paragraph{Contributions.}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt]
+  \item A \textbf{calibration-aware evaluation protocol} for rare-event
+  precipitation forecasting: Brier reliability/resolution decomposition,
+  threshold- and quantile-weighted CRPS, skill scores against climatology,
+  bootstrap confidence intervals, and multi-split robustness --- designed to
+  resist the single-seed and quantile-selection artefacts that inflate apparent
+  skill, and to demonstrate that conformal coverage is insufficient as a
+  stand-alone measure of forecast quality.
+  \item A \textbf{rigorous predictability assessment}: occurrence of an extreme
+  is weakly but genuinely predictable from antecedent state; and the
+  \emph{magnitude} of the largest events carries weak but robust predictability
+  tied to antecedent \textbf{convective instability} (CAPE/CIN), with a CRPS
+  skill over climatology whose bootstrap interval excludes zero across four
+  independent train/test splits.
+  \item A \textbf{cautionary methodological finding}: across the bake-off,
+  \emph{simpler calibrated models outperform the elaborate deep-GP--EVT model},
+  and the choice of response distribution dominates model class (common
+  heavy-tailed choices are badly miscalibrated).
+  \item As a methodological by-product, a \textbf{dependent (coregionalised)
+  hurdle} that borrows strength between occurrence and intensity, validated on
+  synthetic data.
+\end{enumerate}
+
+Empirically, we study the daily standardised precipitation index for London over
+1989--2018. The $95$th-percentile index (with $417$ extreme days) is the primary
+target, as the rarer $99$th-percentile index ($137$ events) is too data-scarce
+for the held-out intensity analysis (its occurrence-only results are in the
+Supplementary Material). Predictors are strictly antecedent ERA5 atmospheric drivers (circulation,
+moisture, and convective-instability fields) and large-scale teleconnection
+indices. Because the index is itself an ERA5-derived precipitation product, we
+exclude all precipitation fields from the predictors and lag every driver, so the
+assessment is of genuine antecedent predictability rather than diagnosis.
+
+The remainder of the paper is organised as follows.
+Section~\ref{sec:related} positions our work within the literatures on
+extreme-value modelling, Gaussian processes, conformal prediction, and forecast
+evaluation. Section~\ref{sec:data} describes the data and predictors.
+Section~\ref{sec:method} sets out the models we compare, the conformal
+calibration, and the evaluation protocol. Section~\ref{sec:results} presents the
+results, and Sections~\ref{sec:discussion}--\ref{sec:conclusion} discuss
+implications and conclude.
+
+% ===========================================================================
+\section{Related work}\label{sec:related}
+% ===========================================================================
+
+Our work sits at the intersection of four literatures; we review each in turn and
+then state precisely how this study differs.
+
+\paragraph{Statistical modelling of precipitation extremes.}
+Extreme-value theory provides the asymptotic foundation for tail modelling. The
+peaks-over-threshold approach models exceedances above a high threshold by the
+Generalised Pareto distribution \citep{pickands1975,davison1990}, the framework
+we adopt for the intensity component; the block-maxima approach uses the
+Generalised Extreme Value distribution \citep{coles2001evt}. EVT is widely
+applied in hydrology and climatology \citep{katz2002}, including non-stationary
+and spatial Bayesian formulations of precipitation extremes
+\citep{cooley2007}. This body of work is, however, predominantly
+\emph{descriptive} --- estimating return levels or letting tail parameters vary
+smoothly with a few covariates --- rather than producing flexible,
+covariate-rich \emph{forecasts} at a fixed lead time, and it offers no
+finite-sample coverage guarantee. We retain the GPD tail but embed it in a
+flexible predictive model and calibrate it conformally.
+
+\paragraph{Machine learning and deep learning for extremes.}
+Data-driven methods increasingly target extremes: \citet{galib2022deepextrema}
+forecast block maxima with a deep network constrained by GEV theory, and neural
+networks have been used to estimate extreme-value parameters. More broadly,
+predictive uncertainty in deep models is quantified with deep ensembles
+\citep{lakshminarayanan2017} and Monte-Carlo dropout \citep{gal2016}. These
+methods capture non-linear dependence on predictors and return uncertainty
+estimates, but they are typically miscalibrated in the tail and lack
+distribution-free guarantees --- the gap our conformal layer closes.
+
+\paragraph{Gaussian processes: depth and multiple outputs.}
+Gaussian processes offer principled non-parametric regression with built-in
+uncertainty \citep{rasmussen2006gpml}, made scalable through sparse variational
+inference with inducing points \citep{titsias2009,hensman2013}. Expressiveness
+is increased by composing layers in deep Gaussian processes
+\citep{damianou2013deep}, trained by doubly-stochastic variational inference
+\citep{salimbeni2017doubly}, or by learning the kernel through a neural feature
+map in deep kernel learning \citep{wilson2016deepkernel}. Correlated outputs are
+modelled by multi-output GPs and coregionalisation
+\citep{bonilla2008multitask,alvarez2012kernels}. A GP with a Gaussian likelihood
+cannot represent heavy-tailed, skewed, zero-inflated responses; we therefore
+pair the GP prior with an EVT likelihood and use coregionalisation not to share
+information across tasks but to couple the two halves of a hurdle model.
+
+\paragraph{Two-part, hurdle, and selection models.}
+Semicontinuous and zero-inflated outcomes are commonly modelled by two-part
+(hurdle) decompositions separating occurrence from intensity. Allowing the two
+parts to be \emph{dependent} has a long history: correlated random-effects
+formulations \citep{olsen2001twopart}, copula couplings, and the sample-selection
+models of econometrics \citep{heckman1979selection}, which explicitly address the
+correlation between a selection (occurrence) equation and an outcome (intensity)
+equation. To our knowledge this dependence has not been exploited within a
+deep-GP--EVT \emph{forecasting} model, where --- because intensity is observed
+only on the rare extreme days --- borrowing strength from the abundant
+occurrence data is especially valuable.
+
+\paragraph{Conformal prediction.}
+Conformal prediction yields distribution-free, finite-sample coverage for any
+underlying predictor \citep{vovk2005}. Split-conformal methods make this
+practical for regression \citep{lei2018}, and conformalised quantile regression
+adapts the intervals to heteroscedasticity \citep{romano2019cqr}. Exchangeability
+can be relaxed for covariate shift \citep{tibshirani2019} and, crucially for us,
+for time series and online distribution shift through adaptive conformal
+inference \citep{gibbs2021adaptive,xu2021}. Coverage at very high confidence
+levels --- the extreme regime --- is addressed by \citet{pasche2025extreme}, who
+combine EVT with conformal prediction to build reliable intervals for
+high-impact events. That work, the closest to ours, constructs \emph{regression
+intervals} from a black-box extreme-quantile estimator under (weighted)
+exchangeability; it uses neither a Gaussian-process nor a generative model, does
+not forecast exceedance \emph{probabilities}, and does not model temporal
+dependence natively. Here, by contrast, tail-targeted and temporally-adaptive
+conformal calibration is applied to a generative model, within a broader
+predictability study.
+
+\paragraph{Forecast evaluation of extremes.}
+Probabilistic forecasts are assessed with proper scoring rules
+\citep{gneiting2007scoring} under the paradigm of maximising sharpness subject to
+calibration \citep{gneiting2007sharpness}; the Brier score admits a
+reliability--resolution decomposition \citep{murphy1973}. For extremes,
+threshold- and quantile-weighted scoring rules focus evaluation on the tail
+while remaining proper \citep{gneiting2011threshold}, and naive restriction to
+extreme observations can paradoxically reward miscalibrated forecasts --- the
+forecaster's dilemma \citep{lerch2017dilemma}. Our evaluation is built on these
+principles.
+
+\paragraph{Positioning.}
+Much of this literature proposes ever more expressive models for extremes. We
+take the complementary stance of \emph{measuring} how much is predictable and
+which modelling choices matter, under an evaluation protocol built from proper
+scoring rules, skill against climatology, and bootstrap and multi-split
+robustness. In doing so we find --- against the prevailing direction --- that
+under this dataset and evaluation framework simple calibrated models outperform an
+elaborate deep-GP extreme-value model, and that conformal coverage, increasingly
+reported as a calibration guarantee, is insufficient on its own as a measure of
+forecast quality. This emphasis on rigorous
+predictability assessment, rather than a new architecture, is the gap we fill.
+
+% ===========================================================================
+\section{Data}\label{sec:data}
+% ===========================================================================
+
+\subsection{The London precipitation-extreme index}\label{sec:data-index}
+Our response variable is a standardised daily precipitation-extreme index for
+London derived from the Copernicus Climate Data Store product \emph{Extreme
+precipitation risk indicators for Europe and European cities (1950--2019)}. The
+underlying field is the ERA5 reanalysis dynamically downscaled to a
+$2\,\mathrm{km}\times2\,\mathrm{km}$ grid (ERA5-2km) with urban
+parameterisation, which resolves London as $53$ grid cells. For each cell and
+day the indicator is the standardised exceedance
+\begin{equation}\label{eq:index-def}
+\Ind \;=\; \frac{P}{P_q},
+\end{equation}
+where $P$ is daily precipitation and $P_q$ is the fixed $q$th percentile of wet
+days ($P\ge 1\,\mathrm{mm}$) over the 1950--2019 reference period. The index is
+dimensionless, and $\Ind>1$ marks an extreme: precipitation exceeding the
+historical $q$th-percentile level. We study both the $q=95$ and $q=99$
+thresholds. To obtain a single city-level series we take the daily maximum of
+$\Ind$ over the $53$ cells, so an extreme day is one on which \emph{any} part of
+London exceeds its threshold. We analyse the thirty-year record
+1989--2018, extending the ten-year (2009--2018) record used in preliminary work
+by a factor of three to enlarge the scarce set of extreme examples.
+
+\subsection{Exploratory characteristics}\label{sec:data-eda}
+The series comprises $10{,}957$ daily observations. Its defining features ---
+which directly motivate the modelling choices of Section~\ref{sec:method} ---
+are summarised in Table~\ref{tab:data} and Figure~\ref{fig:data}. First, extremes are \emph{rare}:
+$3.8\%$ of days at the $95$th percentile and only $1.3\%$ at the $99$th, the
+latter giving just $137$ extreme days in thirty years. Second, the index is
+\emph{zero-inflated and heavy-tailed}: about a quarter of days are exactly zero,
+the median is below $0.02$, yet the maximum exceeds $6$ at the $95$th-percentile
+standardisation --- a strong right skew incompatible with a Gaussian response.
+Third, occurrence is \emph{seasonal}: the monthly extreme rate peaks in summer
+(July--August, reaching $6\%$ at the $95$th percentile and $3\%$ at the $99$th)
+and is lowest in late winter and early spring, consistent with convective
+summer rainfall. Fourth, the extreme indicator exhibits only \emph{limited
+temporal autocorrelation}, so the persistence available to an autoregressive
+forecaster is modest --- one reason that drivers beyond the index's own history
+(Section~\ref{sec:data-predictors}) are essential.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Summary characteristics of the London precipitation-extreme index
+(1989--2018; $N=10{,}957$ days), by standardisation threshold. Extreme days are
+those with $\Ind>1$.}
+\label{tab:data}
+\begin{tabular}{lcc}
+\toprule
+& \textbf{$95$th percentile} & \textbf{$99$th percentile}\\
+\midrule
+Extreme days (total)            & $417$ & $137$\\
+Extreme rate (\%)               & $3.81$ & $1.25$\\
+\;\;train 1989--2008 ($7{,}305$ d) & $287$ ($3.93\%$) & $101$ ($1.38\%$)\\
+\;\;test\phantom{i} 2009--2018 ($3{,}652$ d) & $130$ ($3.56\%$) & $36$ ($0.99\%$)\\
+Days equal to zero (\%)         & \multicolumn{2}{c}{$25.5$}\\
+Median index                    & $0.016$ & $0.010$\\
+Maximum index                   & $6.46$ & $3.95$\\
+Peak season                     & \multicolumn{2}{c}{July--August}\\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_data}
+\caption{The London $95$th-percentile precipitation-extreme index, 1989--2018.
+\textbf{(a)} Daily series with extreme days ($\Ind>1$) marked and the train/test
+split; \textbf{(b)} the distribution is zero-inflated ($\sim$a quarter of days
+are exactly zero) and strongly right-skewed (log count); \textbf{(c)} extremes
+peak in summer (convective rainfall); \textbf{(d)} the extreme indicator has very
+short memory --- the autocorrelation is negligible beyond a day or two (dashed:
+$95\%$ band) --- which caps how much an autoregressive forecaster can achieve.}
+\label{fig:data}
+\end{figure}
+
+\subsection{Antecedent predictors}\label{sec:data-predictors}
+All predictors are \emph{strictly antecedent}: for a horizon-$h$ forecast of day
+$t+h$ they are functions only of information available up to day $t$. We use
+three groups.
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt]
+  \item \textbf{Index history.} Lagged values of the index (up to $14$ days),
+  rolling means and maxima over $7$/$14$/$30$-day windows, counts of recent
+  exceedances, and harmonic encodings of day-of-year and month to capture
+  seasonality.
+  \item \textbf{ERA5 atmospheric drivers.} Antecedent fields from the ERA5
+  reanalysis over a synoptic-scale window around London: mean sea-level pressure
+  and its gradients, geopotential height ($500$/$850\,$hPa), specific and
+  total-column water vapour, integrated water-vapour transport, near-surface
+  temperature and winds, and convective-instability diagnostics --- convective
+  available potential energy and inhibition, the K-index, and the Total-Totals
+  index. Fields are aggregated to daily statistics (means, and maxima for the
+  convective indices) and reduced to regional summaries.
+  \item \textbf{Teleconnection indices.} Lagged North Atlantic Oscillation,
+  Arctic Oscillation, and an El Ni\~no--Southern Oscillation index, capturing
+  large-scale circulation states relevant at longer horizons.
+\end{enumerate}
+In the analysis the drivers are introduced \emph{cumulatively} --- index history;
+$+$\,teleconnections; $+$\,ERA5 circulation and moisture; $+$\,convective
+instability --- so that each increment isolates a class of predictors. All
+features are standardised using training-set statistics only; the complete list
+and the retrieval recipe are in Appendix~\ref{app:data}.
+
+\begin{remark}[No leakage; perfect-prognosis framing]
+ERA5 is a reanalysis that assimilates observations, so using fields at or after
+the target day would be circular. We therefore use only \emph{lagged} drivers,
+known strictly before the forecast time. This is the standard
+\emph{perfect-prognosis} predictability setting; an operational system would
+replace antecedent ERA5 with numerical-weather-prediction \emph{forecast}
+fields, which we leave to future work (Section~\ref{sec:conclusion}).
+\end{remark}
+
+\subsection{Threshold, training, and testing}\label{sec:data-split}
+We take the \textbf{$95$th-percentile index as the primary target}: its $417$
+extreme days ($287$ train, $130$ test) admit the full analysis, including the
+held-out intensity test, which requires extreme days in both training and test
+across several splits. The rarer $99$th-percentile index has only $137$ extreme
+days in thirty years ($101$ train, $36$ test) --- too few for the intensity
+analysis --- so its occurrence-only results are given in the Supplementary
+Material. Unless stated, results are for the $95$th percentile at horizon $h=1$.
+
+Because the data are a time series, all splits respect chronology. The primary
+split trains on 1989--2008 ($7{,}305$ days) and holds out 2009--2018 ($3{,}652$
+days); preprocessing statistics and conformal calibration sets are derived from
+the training period only. To verify that results are not an artefact of a single
+test window, the intensity analysis is additionally repeated over four
+forward-only, expanding-window splits (test periods beginning 2003, 2006, 2009,
+and 2012), and all stochastic results are averaged over random seeds.
+
+% ===========================================================================
+\section{Methodology}\label{sec:method}
+% ===========================================================================
+
+Section~\ref{sec:setup} fixes notation and the predictability target.
+Section~\ref{sec:models} describes the ladder of models we compare, from
+climatology and logistic regression through zero-inflated distributional
+regressions to a deep Gaussian-process extreme-value hurdle.
+Section~\ref{sec:conformal} describes the conformal calibration we assess (and
+why its coverage guarantee is, on its own, uninformative).
+Section~\ref{sec:metrics} sets out the evaluation protocol --- proper scores,
+skill against climatology, a hold-out intensity test, and bootstrap and
+multi-split robustness --- which is itself a contribution.
+
+% --------------------------------------------------------------------------
+\subsection{Problem set-up and notation}\label{sec:setup}
+% --------------------------------------------------------------------------
+Let $\Ind_t \ge 0$ denote the daily standardised precipitation index on day
+$t$, and let $u>0$ be a fixed exceedance threshold (we take $u=1$, the value at
+which the index marks an extreme, and report sensitivity to $u$). A day is
+\emph{extreme} when $\Ind_t > u$. Write the occurrence indicator and the excess
+as
+\begin{equation}
+O_t \;=\; \mathbf{1}\{\Ind_t > u\},
+\qquad
+Y_t \;=\; (\Ind_t - u)\,\big|\,\{\Ind_t > u\},
+\end{equation}
+so that $O_t\in\{0,1\}$ is observed every day while the excess $Y_t$ is
+\emph{defined and observed only on extreme days}. This asymmetry --- many
+occurrence observations, few intensity observations --- shapes both the modelling
+(Section~\ref{sec:models}) and the separate evaluation of occurrence and
+intensity predictability (Section~\ref{sec:metrics}).
+
+Each day carries a vector of covariates $\bx_t\in\Real^d$ that are
+\emph{strictly antecedent}: functions of information available up to and
+including day $t$ (autoregressive lags and rolling summaries of the index, plus
+lagged ERA5 atmospheric drivers and teleconnection indices; see
+Section~\ref{sec:data}). Let $\Filt_t$ be the filtration generated by all
+information up to day $t$. For a forecast horizon $h\ge 1$ the target is the
+\emph{predictive distribution} of $\Ind_{t+h}$ given $\Filt_t$, summarised by
+its conditional CDF
+\begin{equation}
+F_{t+h}(z) \;=\; \Prob\!\left(\Ind_{t+h} \le z \,\middle|\, \Filt_t\right),
+\qquad z\ge 0 .
+\end{equation}
+Two functionals are of primary interest: the \emph{exceedance probability}
+$\pi_{t+h}=\Prob(\Ind_{t+h}>u\mid\Filt_t)=1-F_{t+h}(u)$ and the conditional law
+of the excess $Y_{t+h}\mid\{\Ind_{t+h}>u\}$.
+
+% --------------------------------------------------------------------------
+\subsection{Models compared}\label{sec:models}
+% --------------------------------------------------------------------------
+We assess a ladder of models of increasing complexity, all sharing the same
+strictly antecedent covariates $\bx_t$ and judged by the protocol of
+Section~\ref{sec:metrics}. The aim is not to crown one architecture but to learn
+\emph{how much} of the index is predictable and \emph{which} modelling choices
+matter.
+
+\paragraph{Baselines.} \emph{Climatology} issues the empirical distribution of
+the training index, the reference against which every skill score is measured; a
+\emph{stationary peaks-over-threshold} (POT) model adds a Generalised Pareto tail
+fitted to the training excesses but no covariate dependence.
+
+\paragraph{Occurrence: logistic regression.} For the exceedance probability
+$\pi_{t+h}=\Prob(\Ind_{t+h}>u\mid\Filt_t)$ we fit a regularised logistic
+regression on $\bx_t$ --- the natural calibrated occurrence model.
+
+\paragraph{Full-distribution zero-inflated regression.} Rather than hurdle at the
+extreme threshold --- which restricts intensity estimation to the few
+exceedances --- we model the \emph{entire} distribution of $\Ind$ using all wet
+days and derive the exceedance probability and tail from it. With a point mass
+$p_0(\bx_t)$ at zero and a positive continuous CDF $F_+$,
+\begin{equation}\label{eq:zi}
+F_{t+h}(z) = p_0 + (1-p_0)\,F_+\!\big(z;\bm\theta(\bx_t)\big)\ (z>0),
+\qquad \pi_{t+h}=(1-p_0)\big(1-F_+(u)\big),
+\end{equation}
+with $p_0$ and the parameters $\bm\theta$ driven by linear predictors in $\bx_t$.
+The Generalised Pareto distribution (GPD) is
+\begin{equation}\label{eq:gpd}
+H(y;\sigma,\xi) = 1-\left(1+\xi y/\sigma\right)_{+}^{-1/\xi}\ (\xi\neq0),\quad
+1-e^{-y/\sigma}\ (\xi=0),\quad y\ge0,
+\end{equation}
+with $(a)_+=\max(a,0)$ and $\xi$ governing tail heaviness. For $F_+$ we compare a
+log-normal, a gamma, and --- as the extreme-value-motivated choice --- the
+\emph{extended GPD} (eGPD),
+\begin{equation}\label{eq:egpd}
+F_+(z) = \big[H(z;\sigma,\xi)\big]^{\kappa},\qquad \kappa>0,
+\end{equation}
+which is GPD-tailed at high values (inheriting the Pickands--Balkema--de Haan
+justification of extreme-value theory; \citealp{coles2001evt}) yet is a single
+continuous model over all positive intensities, requiring \emph{no} threshold
+selection ($\kappa$ shapes the lower tail).
+
+\paragraph{Hurdle with a GPD tail, and its deep-GP variant.} The most elaborate
+contender is a two-part hurdle whose intensity component is a non-stationary GPD,
+\begin{equation}\label{eq:hurdle-cdf}
+F_{t+h}(z) = (1-\pi_{t+h}) + \pi_{t+h}\,H(z-u;\sigma_{t+h},\xi),\qquad z>u,
+\end{equation}
+with $\pi_{t+h}=\sigmoid(g_\pi(\bx_t))$ and
+$\sigma_{t+h}=\softplus(g_\sigma(\bx_t))$ driven by latent functions on which we
+place Gaussian-process priors --- a deep-kernel GP (a neural feature map composed
+with a GP kernel; \citealp{wilson2016deepkernel}) or a deep GP
+\citep{damianou2013deep} --- fitted by sparse variational inference
+\citep{salimbeni2017doubly}. A Gaussian-likelihood GP cannot represent the
+zero-inflation and heavy tail of $\Ind$, which motivates the EVT likelihood.
+Full inference details are in Appendix~\ref{app:inference}.
+
+\paragraph{Dependent hurdle (a methodological by-product).} The classical hurdle
+assumes occurrence and intensity are conditionally independent; physically they
+should be positively correlated, and coupling them lets the abundant occurrence
+data inform the data-starved tail. We realise this by giving $(g_\pi,g_\sigma)$ a
+multi-output GP prior with an intrinsic coregionalisation
+\citep{bonilla2008multitask,alvarez2012kernels},
+$\operatorname{Cov}(g_a(\bx),g_b(\bx'))=B_{ab}\,k_\theta(\bx,\bx')$, whose
+off-diagonal yields an interpretable borrowing-strength correlation
+$\rho=B_{\pi\sigma}/\sqrt{B_{\pi\pi}B_{\sigma\sigma}}$ ($\rho=0$ recovers the
+independent hurdle). Because the excess is observed only on extreme days $\rho$
+is weakly identified, so we validate recovery on synthetic data
+(Section~\ref{sec:res-synth}). This construction --- related to correlated
+two-part models in biostatistics and econometrics
+\citep{olsen2001twopart,heckman1979selection} --- is a by-product, not the
+paper's main claim.
+
+\paragraph{Implementation.} Logistic regression uses $L_2$ regularisation
+($C=1$); the $L_1$ feature screen uses $C=0.3$. The distributional regressions
+place linear predictors on the zero-inflation probability and the positive-part
+parameters and are fitted by maximum likelihood. The deep-GP--EVT hurdle uses a
+deep-kernel sparse variational GP ($M=64$ inducing points, a two-hidden-layer
+feature map), with results averaged over five random seeds; conformal intervals
+target $90\%$ coverage.
+
+% --------------------------------------------------------------------------
+\subsection{Tail-conformal calibration}\label{sec:conformal}
+% --------------------------------------------------------------------------
+Any of the models above yields a model-based predictive tail, but under
+misspecification its quantiles need not be calibrated. As one calibration option
+we assess, we wrap a model in a conformal layer \citep{vovk2005,romano2019cqr}
+that supplies distribution-free coverage, with two adaptations for our setting.
+\emph{Tail targeting:} at the very high confidence levels relevant to extremes the
+required nonconformity quantile can exceed what a finite calibration set resolves,
+so we extrapolate the upper tail of the calibration scores with a GPD fit,
+following the extreme-conformal construction of \citet{pasche2025extreme}.
+\emph{Temporal adaptation:} because daily extremes are not exchangeable, we use
+adaptive conformal inference \citep{gibbs2021adaptive}, updating the level online,
+\begin{equation}\label{eq:aci}
+\alpha_{t+1} = \alpha_t + \gamma\big(\alpha-\mathrm{err}_t\big),\qquad
+\mathrm{err}_t=\mathbf{1}\{\Ind_t\notin C_t\},
+\end{equation}
+with $C_t$ the issued interval and $\gamma>0$ a step size, over a rolling
+walk-forward window; under \eqref{eq:aci} with bounded scores the long-run
+coverage converges to $1-\alpha$ irrespective of the data-generating process
+\citep{gibbs2021adaptive}. We stress that this guarantee concerns \emph{coverage},
+not predictive quality: as Section~\ref{sec:res-cal} shows, a conformally
+calibrated model can still be worse than climatology on proper scores, so coverage
+alone is an insufficient indicator and we never report it as evidence of a good
+forecast.
+
+% --------------------------------------------------------------------------
+\subsection{Evaluation protocol}\label{sec:metrics}
+% --------------------------------------------------------------------------
+Because the predictability of extremes is intrinsically limited, evaluation must
+be both \emph{proper} and \emph{robust}: it must reward calibrated, sharp
+forecasts (maximising sharpness subject to calibration;
+\citealp{gneiting2007sharpness}) and must resist the artefacts --- single-run
+noise, quantile selection --- that easily manufacture apparent skill in a
+low-signal regime. We therefore adopt the following protocol, and treat it as a
+contribution in its own right.
+
+\paragraph{Occurrence: Brier decomposition and skill.} For the exceedance
+probability we report the Brier score, its reliability/resolution/uncertainty
+decomposition \citep{murphy1973} --- reliability measuring calibration, resolution
+measuring informativeness --- and the Brier skill score against climatology. A
+calibrated-but-uninformative forecast (e.g.\ climatology) has zero resolution, so
+positive resolution with low reliability is the bar a useful model must clear.
+
+\paragraph{Whole distribution and tail: (tw)CRPS.} We score the predictive
+distribution with the continuous ranked probability score and its
+threshold-weighted form \citep{gneiting2011threshold},
+\begin{equation}\label{eq:twcrps}
+\mathrm{twCRPS}(F_{t+h},\Ind_{t+h})
+= \int_{\Real}\big(F_{t+h}(z)-\mathbf{1}\{\Ind_{t+h}\le z\}\big)^2\,w(z)\,dz,
+\qquad w(z)=\mathbf{1}\{z>\tau\},
+\end{equation}
+which remains proper while emphasising the tail ($\tau=u$). With $\tau=u$ the
+sub-threshold distribution is irrelevant, so the tail score depends only on the
+exceedance probability and the modelled excess.
+
+\paragraph{Intensity predictability, isolated.} Because the tail-weighted CRPS
+over all days is dominated by the many non-extreme days, we additionally isolate
+intensity by scoring the \emph{excess} on observed extreme days: a CRPS of the
+excess (equivalently, the integral of the pinball loss over quantile levels)
+relative to the climatological excess distribution. The excess model is a
+quantile regression whose regularisation is chosen by cross-validation on the
+training set only, so the test set never informs model selection.
+
+\paragraph{Robustness.} Skill scores are computed against a climatological
+reference (the empirical training distribution). Every estimate carries a
+confidence interval from $1{,}000$--$2{,}000$ bootstrap resamples of the test
+extreme days, and the intensity result is repeated across the four forward-only,
+expanding-window splits of Section~\ref{sec:data-split}. Discrimination metrics
+(precision--recall AUC) are reported only as secondary context, and conformal
+coverage is reported but, per Section~\ref{sec:conformal}, never as evidence of
+predictive quality.
+
+% ===========================================================================
+\section{Results}\label{sec:results}
+% ===========================================================================
+
+We evaluate every model on the London $95$th-percentile index by the proper
+scores of Section~\ref{sec:metrics} against a climatological reference, with
+stochastic results seed-averaged and intensity skills carrying bootstrap
+confidence intervals. Beyond the main bake-off (Section~\ref{sec:res-bakeoff}) we
+report an $L_1$-regularised feature screen identifying which covariates carry
+occurrence and intensity signal; the hold-out intensity test across the four
+expanding-window splits; a seed-averaged horizon sweep $h\in\{1,3,7,14,28\}$; and
+a synthetic study, with a known occurrence--intensity correlation, validating the
+dependent hurdle.
+
+\subsection{Simpler models win; distribution choice dominates}\label{sec:res-bakeoff}
+Table~\ref{tab:bakeoff} reports the bake-off. Three findings stand out. First,
+the elaborate deep-GP--EVT hurdle is \emph{worse than climatology} on both the
+Brier and tail-CRPS skill scores (Brier skill $\approx-0.4$), while a plain
+calibrated logistic regression and the zero-inflated extended-GPD regression are
+the best occurrence models. Second, the choice of response distribution matters
+more than model class: a zero-inflated log-normal is substantially
+miscalibrated (tail-CRPS skill $\approx-2$), whereas the light-tailed gamma and
+the threshold-free extended GPD are well behaved --- the index tail is lighter
+than a log-normal or a low-threshold Generalised Pareto fit assumes. Third,
+modelling the \emph{full} zero-inflated distribution (and deriving the exceedance
+probability from it) is far better than hurdling at the extreme threshold, which
+starves the tail of data.
+
+\begin{table}[t]
+\centering\small
+\caption{Model bake-off on London $95$th, $h=1$ (seed-averaged). Brier skill
+score (BSS) and tail-CRPS skill (twCRPSS) are relative to climatology; positive
+is better. RES is Brier resolution (informativeness, $\times10^3$).}
+\label{tab:bakeoff}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Model} & \textbf{BSS} & \textbf{RES}$\times10^3$ & \textbf{twCRPSS} \\
+\midrule
+Climatology / stationary POT      & $0.000$ & $0.0$ & $0.000$ \\
+Logistic ($+$ERA5)                & $\mathbf{+0.038}$ & $0.83$ & --- \\
+ZI log-normal ($+$ERA5)           & $-0.29$ & --- & $-2.27$ \\
+ZI gamma ($+$ERA5)                & $+0.008$ & $0.79$ & $-0.06$ \\
+ZI extended-GPD ($+$ERA5)         & $+0.012$ & $0.70$ & $\mathbf{-0.045}$ \\
+Deep-GP--EVT hurdle (TCDGP)       & $\approx-0.4$ & $0.02$ & $\approx-0.3$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Conformal coverage does not imply forecast quality}\label{sec:res-cal}
+The tail-conformal layer attains its nominal $0.90$ coverage on the real series
+across every predictor set and horizon (Figure~\ref{fig:horizon}b). But this is
+\emph{guaranteed by construction} and is uninformative about predictive quality:
+the same deep-GP--EVT model whose conformal intervals are perfectly calibrated is
+simultaneously \emph{worse than climatology} on the proper scores
+(Table~\ref{tab:bakeoff}). The reliability diagram
+(Figure~\ref{fig:reliability}) makes the point directly: the deep-GP--EVT model's
+raw exceedance probabilities are badly miscalibrated and almost flat (low
+resolution), whereas a plain logistic regression is well calibrated and
+informative. Conformal coverage should therefore not be reported as evidence of a
+good probabilistic forecast --- a cautionary point in its own right.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\linewidth]{figures/fig_reliability}
+\caption{Reliability diagram for the exceedance probability (London $95$th,
+$h{=}1$). A plain logistic regression tracks the diagonal (calibrated) and spreads
+its predictions (informative); the deep Gaussian-process extreme-value model is
+overconfident and nearly flat, despite its conformal intervals attaining nominal
+coverage. Climatology is a single point at the base rate.}
+\label{fig:reliability}
+\end{figure}
+
+\subsection{Predictability of occurrence}\label{sec:res-occ}
+Occurrence is weakly but genuinely predictable: the best calibrated model
+improves on climatology with a Brier skill of $+0.038$ and positive resolution
+(Table~\ref{tab:bakeoff}). An $L_1$-regularised logistic identifies physically
+sensible antecedent predictors --- led by the \textbf{K-index} of convective
+instability, the $500$\,hPa geopotential, integrated vapour transport, low-level
+humidity, and season. Skill nonetheless decays toward the prevalence floor as the
+forecast horizon grows (Figure~\ref{fig:horizon}a), consistent with the limited
+day-scale persistence of London extremes. At the rarer $99$th-percentile
+threshold, where the scarce data support only an occurrence analysis, the
+qualitative picture is unchanged (Supplementary Material).
+
+\subsection{Predictability of intensity}\label{sec:res-int}
+Whether the \emph{magnitude} of an extreme is predictable is the more delicate
+question, and the answer is a qualified yes. On the extreme days, $23$ of $49$
+antecedent features correlate with the excess at $p<0.05$ (versus $\sim2$ by
+chance), led by convective inhibition and CAPE. To test whether this signal
+generalises, we fit quantile regressions of the excess on held-out extreme days
+(regularisation chosen by cross-validation on the training set only) and score
+them by the continuous ranked probability score of the excess against the
+climatological excess distribution. The CRPS skill is small but its bootstrap
+interval \emph{excludes zero}, and --- crucially --- it remains positive across
+four independent expanding-window splits (Table~\ref{tab:intensity},
+Figure~\ref{fig:intensity}). The signal is concentrated in the upper tail (the
+largest events) and is carried by antecedent convective instability (CAPE/CIN).
+Median magnitude, by contrast, is indistinguishable from climatology.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{figures/fig_intensity}
+\caption{Hold-out intensity predictability: CRPS-of-excess skill over climatology,
+with $90\%$ bootstrap confidence intervals, across four forward-only
+expanding-window train/test splits. The skill is small but its interval excludes
+zero in every split.}
+\label{fig:intensity}
+\end{figure}
+
+\begin{table}[t]
+\centering\small
+\caption{Hold-out intensity predictability: CRPS-of-excess skill over climatology
+across forward-only expanding-window splits, with $90\%$ bootstrap intervals.}
+\label{tab:intensity}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Test period} & \textbf{\# test extremes} & \textbf{CRPS skill} & \textbf{$90\%$ CI} & \textbf{P($>0$)} \\
+\midrule
+2003--2018 & $213$ & $+0.037$ & $[+0.021,+0.051]$ & $1.00$ \\
+2006--2018 & $175$ & $+0.027$ & $[+0.015,+0.041]$ & $1.00$ \\
+2009--2018 & $130$ & $+0.035$ & $[+0.021,+0.051]$ & $1.00$ \\
+2012--2018 & $\phantom{0}96$ & $+0.034$ & $[+0.009,+0.061]$ & $0.98$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Synthetic validation of the dependent hurdle}\label{sec:res-synth}
+On data simulated from the generative model with a \emph{known}
+occurrence--intensity correlation ($\rho=0.70$, GPD shape $\xi=0.20$), we verify
+that the coregionalised hurdle recovers the dependence and that it helps. The
+\emph{coupled} model recovers $\widehat\rho\approx+0.83$, while the
+\emph{independent} hurdle (the $\rho\!=\!0$ special case) cannot. Crucially, the
+independent model's intensity head --- estimated from the few exceedances alone
+--- becomes unstable (its shape collapses so that test excesses fall outside the
+GPD support), whereas coupling lets the abundant occurrence data stabilise the
+tail and yields orders-of-magnitude better tail log-likelihood. This is
+direct evidence for the borrowing-strength mechanism: the dependent hurdle
+matters most exactly where intensity data are scarcest.
+
+\subsection{Skill decays with horizon}\label{sec:res-skill}
+Both occurrence skill and discrimination decay toward the climatological floor as
+the forecast horizon grows (Figure~\ref{fig:horizon}a), consistent with the
+limited day-scale persistence of London extremes; conformal coverage, being
+guaranteed by construction, is flat across horizons (Figure~\ref{fig:horizon}b).
+Seed-averaged sweeps found no statistically robust occurrence-discrimination gain
+from atmospheric drivers at any single horizon --- a reminder that the
+predictability documented above is weak and easily masked by noise unless
+assessed with seed-averaging and proper scores rather than single runs.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_horizon}
+\caption{Seed-averaged horizon sweep on the London $95$th-percentile index.
+\textbf{(a)} Occurrence PR-AUC decays toward the prevalence floor (dashed) as the
+forecast horizon grows; driver gains are marginal at all horizons (the apparent
+ERA5 edge at $h=28$ does not survive a higher-seed check; see text).
+\textbf{(b)} Conformal coverage stays at the nominal $0.90$ across all horizons
+and predictor sets. Error bars / markers are means over three seeds.}
+\label{fig:horizon}
+\end{figure}
+
+\paragraph{Summary.} Across the bake-off, simpler calibrated models dominate the
+elaborate deep-GP--EVT model, and the response distribution matters more than the
+model class (Section~\ref{sec:res-bakeoff}); conformal coverage holds but is, on
+its own, uninformative about forecast quality (Section~\ref{sec:res-cal}). The
+substantive finding is a small but
+\emph{rigorously established} predictability: occurrence is weakly predictable
+from antecedent convective-instability and circulation indices
+(Section~\ref{sec:res-occ}), and the magnitude of the largest events is weakly
+predictable from antecedent convective instability, with a CRPS skill over
+climatology that excludes zero across four independent splits
+(Section~\ref{sec:res-int}). The dependent-hurdle mechanism is separately
+validated on synthetic data (Section~\ref{sec:res-synth}).
+
+% ===========================================================================
+\section{Discussion}\label{sec:discussion}
+% ===========================================================================
+
+\paragraph{Predictability is real but small, and physically interpretable.}
+The headline is not a forecasting triumph but an honest measurement: for London,
+the occurrence of a daily precipitation extreme and the magnitude of the largest
+events both carry weak antecedent predictability, on the order of a few percent
+of CRPS skill over climatology. That this signal is led by convective-instability
+indices (the K-index for occurrence; CAPE and convective inhibition for the
+intensity of the largest events) is reassuring: it is the thermodynamics one
+would expect to govern intense convective rainfall, and it argues against the
+skill being an artefact. The median magnitude of an extreme, by contrast, is
+indistinguishable from climatology: once an exceedance occurs, its size is largely
+unpredictable except in the upper tail.
+
+\paragraph{Methodological lessons.} Three are worth emphasising. First,
+\emph{model complexity did not pay}: a deep Gaussian-process extreme-value hurdle
+was beaten by logistic regression and by simple zero-inflated distributional
+regressions. Gaussian processes earn their keep through structure (notably
+spatial structure), and a single-site temporal problem offers them little to
+exploit. Second, the \emph{response distribution dominates}: a log-normal tail
+was substantially miscalibrated, and hurdling at the extreme threshold starved
+the tail of data; modelling the full zero-inflated distribution with a
+threshold-free extended GPD was far better. Third, and most importantly for the
+literature, \emph{conformal coverage is insufficient as a stand-alone indicator of
+forecast quality}: it is attained by construction even by a model that is worse than
+climatology on proper scores. Reporting coverage without a proper-score
+comparison can therefore create a false impression of a good probabilistic
+forecast.
+
+\paragraph{Why rigour mattered here.} Several apparent results did not survive
+scrutiny: a single-seed driver benefit and an apparent long-horizon gain both
+evaporated under seed-averaging, and an across-the-board intensity skill shrank to
+an upper-tail effect once regularisation was chosen without peeking at the test
+set. The predictability we report is what remained after seed-averaging, proper
+scoring, cross-validated model selection, bootstrap intervals, and multi-split
+robustness. In a low-signal regime these safeguards are not optional --- they are
+the difference between a finding and an artefact.
+
+\paragraph{Limitations.} The study is single-site and uses a perfect-prognosis
+design (antecedent reanalysis fields, not operational forecasts); the intensity
+analysis conditions on observed exceedances and so isolates predictability rather
+than delivering an end-to-end forecast; and the index is itself an ERA5-derived
+product, which we mitigate by excluding all precipitation fields and lagging every
+predictor.
+
+% ===========================================================================
+\section{Conclusion}\label{sec:conclusion}
+% ===========================================================================
+
+We set out to measure, rather than merely to model, the predictability of rare
+precipitation extremes in London, and to do so with an evaluation protocol robust
+to the pitfalls of a low-signal setting. The answer is a qualified, quantified
+``a little'': occurrence and the magnitude of the largest events are weakly but
+genuinely predictable from antecedent convective instability, while simpler
+calibrated models suffice and conformal coverage is no substitute for a
+proper-score comparison. Natural extensions are the directions in which more
+signal --- and a genuine role for structured Gaussian-process models --- is most
+plausible: \emph{spatial} modelling across the grid of cells and across European
+cities, \emph{operational} drivers from numerical weather prediction in place of
+reanalysis, and \emph{sub-seasonal} aggregations where slowly varying drivers may
+contribute. Whether predictability rises materially in those settings is, in the
+spirit of this paper, a question to be settled by proper scores and confidence
+intervals rather than asserted.
+
+% ===========================================================================
+\section*{Data and code availability}\label{sec:availability}
+\addcontentsline{toc}{section}{Data and code availability}
+% ===========================================================================
+The underlying data are publicly available: the London precipitation-extreme
+index derives from the Copernicus Climate Data Store product \emph{Extreme
+precipitation risk indicators for Europe and European cities (1950--2019)}, and
+the atmospheric predictors from ERA5 (Copernicus CDS,
+\texttt{reanalysis-era5-single-levels}; and the WeatherBench2 regridded ERA5
+archive) and from the NOAA teleconnection indices. The code accompanying this
+paper --- implementations of all models (logistic, the zero-inflated
+log-normal/gamma/eGPD distributional regressions, and the deep-GP--EVT hurdle),
+the full evaluation protocol (proper scores, the hold-out intensity test,
+bootstrap and multi-split robustness), the data-retrieval and feature-processing
+scripts, and the scripts that produce every figure and table --- together with
+the processed daily feature table, will be deposited in a public repository
+(\textsc{[repository url / archived doi to be inserted on acceptance]}).
+
+% ===========================================================================
+\appendix
+% ===========================================================================
+\section{Data and predictors}\label{app:data}
+
+\paragraph{Response.} The standardised daily precipitation-extreme index for
+London (Section~\ref{sec:data}), derived from the ERA5-2km downscaled reanalysis;
+we use the daily maximum over the $53$ London grid cells, with an extreme defined
+by $\Ind>1$, at the $95$th (primary) and $99$th percentile standardisations.
+
+\paragraph{Antecedent predictors.} All predictors are functions of information up
+to the forecast origin $t$ (a horizon-$h$ forecast of day $t+h$ uses day-$t$
+information only); no precipitation field is used, since the response is itself an
+ERA5-derived precipitation product.
+\begin{itemize}[leftmargin=1.3em,itemsep=1pt]
+\item \textbf{Index history:} lags $\Ind_{t-1},\dots,\Ind_{t-14}$; rolling mean
+over the previous $7$ and $30$ days; rolling maximum over $7$ days; count of
+exceedances in the previous $30$ days; and $\sin/\cos$ harmonics of day-of-year.
+\item \textbf{ERA5 circulation and moisture} (WeatherBench2, $1.5^\circ$, daily
+means over a London-centred box, $45$--$60^\circ$N, $20^\circ$W--$10^\circ$E):
+mean sea-level pressure and its meridional/zonal gradients, total-column water
+vapour, $2$\,m temperature, $10$\,m wind components and speed, geopotential at
+$500$ and $850$\,hPa, and specific humidity at $850$\,hPa.
+\item \textbf{ERA5 convective instability} (Copernicus CDS,
+\texttt{reanalysis-era5-single-levels}, $0.25^\circ$, daily mean and maximum over
+the box): CAPE, convective inhibition (CIN), the K-index, the Total-Totals index,
+total-column water vapour, the vertical-integral eastward/northward
+water-vapour-flux components and their magnitude (IVT).
+\item \textbf{Teleconnection indices} (monthly, broadcast to daily): North
+Atlantic Oscillation and Arctic Oscillation (NOAA CPC), and Ni\~no\,3.4 (NOAA PSL).
+\end{itemize}
+
+\paragraph{Retrieval.} WeatherBench2 fields were read directly from the public
+Google Cloud zarr store with \texttt{xarray}; the convective-instability fields
+were retrieved from the Copernicus CDS via \texttt{cdsapi} with server-side
+spatial subsetting to the box, $6$-hourly sampling aggregated to daily statistics;
+teleconnection indices were downloaded from NOAA. Every driver is forward-filled
+to daily resolution where needed and lagged by the forecast horizon. Processing
+code and the cached daily feature table accompany the paper.
+
+\section{The deep-GP extreme-value hurdle: inference}\label{app:inference}
+
+We give the inference for the most elaborate contender (Section~\ref{sec:models}).
+The parameters depend on covariates through latent functions,
+$\pi=\sigmoid(g_\pi(\bx_t))$, $\sigma=\softplus(g_\sigma(\bx_t))$, and a constant
+shape $\xi_0$ (covariate-dependent $\xi$ is an optional extension). For horizon
+$h$ the per-day likelihood factorises into occurrence and (on extreme days)
+intensity terms,
+\begin{equation}\label{eq:like}
+p\big(O_t,\Ind_t\mid \bg(\bx_{t-h})\big)
+= \pi^{O_t}(1-\pi)^{1-O_t}\,\big[h_{\GPD}(\Ind_t-u;\sigma,\xi_0)\big]^{O_t}
+\,\big[f^{\mathrm{blw}}(\Ind_t)\big]^{1-O_t},
+\end{equation}
+with $h_{\GPD}$ the GPD density and $f^{\mathrm{blw}}$ a zero-inflated positive
+density for the sub-threshold regime.
+
+\paragraph{Sparse variational inference.} We place GP priors on
+$\bg=(g_\pi,g_\sigma)$ and introduce $M\ll N$ inducing variables $\bu=\bg(\bZ)$
+with whitened variational posterior $q(\bu)=\Normal(\bm m,\bm S)$. The evidence
+lower bound is
+\begin{equation}\label{eq:elbo}
+\mathcal{L} = \sum_t \E_{q(\bg(\bx_{t-h}))}\!\big[\log p(O_t,\Ind_t\mid\bg(\bx_{t-h}))\big]
+- \KL\!\big(q(\bu)\,\|\,p(\bu)\big),
+\end{equation}
+the expectation computed by Monte Carlo over the marginal $q(\bg(\bx_{t-h}))$.
+Inducing-point inference reduces cost to $\mathcal{O}(NM^2)$; the kernel acts on a
+neural feature map (deep kernel) or, for the deep GP, on a composition of GP
+layers fitted by doubly-stochastic variational inference \citep{salimbeni2017doubly}.
+Hyperparameters, inducing inputs/distribution, neural weights, and $\xi_0$ are
+learned jointly by maximising \eqref{eq:elbo}.
+
+\paragraph{Coregionalised (dependent) hurdle.} We couple the two latents through a
+linear model of coregionalisation: with $Q$ shared base GPs $f_q\sim\GP(0,k_\theta)$,
+$g_a(\bx)=\sum_{q} W_{aq} f_q(\bx)$, so $\operatorname{Cov}(g_a,g_b)=B_{ab}\,k_\theta$
+with $\bB=\bm W\bm W^\top$. The correlation
+$\rho=B_{\pi\sigma}/\sqrt{B_{\pi\pi}B_{\sigma\sigma}}$ is the borrowing-strength
+parameter; a diagonal $\bm W$ recovers the independent hurdle. Because the excess
+is observed only on extreme days, $\rho$ is weakly identified, so we use a
+weakly-informative prior shrinking $\rho\to0$ and validate recovery on synthetic
+data (Section~\ref{sec:res-synth}).
+
+\paragraph{Tail-conformal layer.} For an interval at level $1-\alpha$ we use a
+conformalised-quantile-regression nonconformity score on the model's predictive
+quantiles, $E_t=\max\{\widehat z_{\alpha/2}-\Ind_t,\ \Ind_t-\widehat z_{1-\alpha/2}\}$;
+when the required score quantile exceeds what the calibration set resolves we
+extrapolate with a GPD fit to the upper calibration scores \citep{pasche2025extreme},
+and we adapt the level online by \eqref{eq:aci} over a rolling window.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

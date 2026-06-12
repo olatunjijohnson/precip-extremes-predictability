@@ -1,0 +1,29 @@
+# Python environments & caches
+**/.venv*/
+**/__pycache__/
+*.pyc
+
+# Large raw data (download from Copernicus CDS instead)
+data/*.zip
+*.nc
+*.grib
+*.download
+
+# Run logs & temporary outputs
+*.log
+**/figures_9*/
+**/_telecon_cache/
+era5_paris_cape_ivt_daily.parquet   # incomplete fetch in progress
+
+# LaTeX build artefacts
+*.aux
+*.out
+*.toc
+*.bbl
+*.blg
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# OS / editor
+.DS_Store

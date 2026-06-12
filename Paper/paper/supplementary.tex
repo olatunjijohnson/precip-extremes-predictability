@@ -1,0 +1,84 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{microtype}
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thetable}{S\arabic{table}}
+\newcommand{\Ind}{\ensuremath{\mathcal{I}}}
+
+\title{\bfseries Supplementary Material\\[0.3em]
+\large How Predictable Are Rare Precipitation Extremes?
+A Calibration-Aware Assessment for London}
+\author{Fankai Dong \and Olatunji Johnson}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Results at the 99th-percentile threshold}
+\label{sec:supp99}
+
+The main paper analyses the $95$th-percentile index, which has $417$ extreme days
+($287$ train, $130$ test). The $99$th-percentile index is far scarcer --- only
+$137$ extreme days in thirty years ($101$ train, $36$ test) --- which precludes
+the held-out intensity analysis (that requires extreme days in both train and
+test across several splits). For completeness we report here the
+\emph{occurrence} results of the simpler models at the $99$th percentile; the
+deep Gaussian-process extreme-value hurdle, already dominated at the $95$th
+percentile, is not re-run.
+
+Table~\ref{tab:supp99} shows the bake-off (seed-averaged over three seeds, horizon
+$h=1$), scored against climatology as in the main paper. The qualitative picture
+matches the $95$th percentile but is weaker and noisier, as expected with a third
+as many events:
+\begin{itemize}
+\item \textbf{Occurrence remains weakly predictable.} A plain calibrated logistic
+regression with the ERA5 drivers beats climatology (Brier skill score
+$+0.015$), improving on index history alone ($+0.001$); the gain again comes
+chiefly from the convective-instability and circulation fields. Resolution
+(informativeness) is positive but smaller than at the $95$th percentile
+($0.36\times10^{-3}$ versus $0.83\times10^{-3}$).
+\item \textbf{The distributional models fall below climatology.} With only $101$
+training exceedances, the zero-inflated gamma and eGPD regressions are slightly
+worse than climatology on the Brier score, and the zero-inflated log-normal is
+again catastrophically miscalibrated --- echoing, more sharply, the main-paper
+finding that the response distribution matters and that data scarcity penalises
+the more flexible models.
+\item \textbf{The tail is climatology-bound.} No model beats the climatological
+tail on the threshold-weighted CRPS (all skill scores $\le 0$), and the scarce
+exceedances do not support the held-out intensity test.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\caption{Bake-off at the $99$th-percentile threshold (London, $h=1$,
+seed-averaged). Brier skill score (BSS) and threshold-weighted CRPS skill
+(twCRPSS) are relative to climatology; positive is better. RES is the Brier
+resolution ($\times10^3$). Climatology and a stationary peaks-over-threshold
+model define the reference. Compare with Table~2 of the main paper
+($95$th percentile).}
+\label{tab:supp99}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Model} & \textbf{BSS} & \textbf{RES}$\times10^3$ & \textbf{twCRPSS} \\
+\midrule
+Climatology / stationary POT     & $0.000$  & $0.00$ & $0.000$ \\
+Logistic (index history)         & $+0.001$ & $0.08$ & --- \\
+Logistic ($+$ERA5)               & $\mathbf{+0.015}$ & $0.36$ & --- \\
+ZI gamma ($+$ERA5)               & $-0.069$ & $0.20$ & $-0.130$ \\
+ZI extended-GPD ($+$ERA5)        & $-0.048$ & $0.26$ & $-0.087$ \\
+ZI log-normal ($+$ERA5)          & $-1.153$ & $0.25$ & $-4.827$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In short, the $99$th-percentile threshold tells the same story as the $95$th ---
+weak but genuine occurrence predictability led by convective instability, a
+climatology-bound tail, and a penalty on over-flexible models --- but with too
+few events to support the intensity analysis or to add to the main conclusions.
+
+\end{document}
