@@ -13,7 +13,6 @@ data/*.zip
 *.log
 **/figures_9*/
 **/_telecon_cache/
-era5_paris_cape_ivt_daily.parquet   # incomplete fetch in progress
 
 # LaTeX build artefacts
 *.aux

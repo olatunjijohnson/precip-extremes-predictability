@@ -55,7 +55,7 @@
 \DeclareMathOperator*{\argmin}{arg\,min}
 
 \title{\bfseries How Predictable Are Rare Precipitation Extremes?\\
-A Calibration-Aware Assessment for London}
+A Calibration-Aware Assessment for London and Paris}
 \author{Fankai Dong \and Olatunji Johnson\\[0.3em]
 \small Department of Mathematics, University of Manchester}
 \date{\today}
@@ -67,7 +67,8 @@ A Calibration-Aware Assessment for London}
 \noindent
 How predictable are rare precipitation extremes, and how should that
 predictability be measured? We address both questions with thirty years
-(1989--2018) of a standardised daily precipitation-extreme index for London,
+(1989--2018) of a standardised daily precipitation-extreme index for two
+climatically contrasting cities, London (maritime) and Paris (more continental),
 augmented with strictly antecedent ERA5 atmospheric drivers. Methodologically,
 we argue that rare-event forecasts must be judged by \emph{calibration-aware
 proper scores} relative to climatology --- not by discrimination metrics or by
@@ -77,17 +78,19 @@ evaluation protocol (Brier reliability/resolution decomposition, threshold- and
 quantile-weighted CRPS, skill scores, bootstrap confidence intervals, and
 multi-split robustness) that guards against the single-seed and
 quantile-selection pitfalls that inflate apparent skill. Empirically, across a
-bake-off of models from logistic regression to a deep Gaussian-process
-extreme-value hurdle, we find that (i) \textbf{simple calibrated models
-outperform the elaborate ones}, and the choice of response distribution
-dominates model class; (ii) \textbf{occurrence} of an extreme is weakly but
-genuinely predictable from antecedent state (led by convective-instability and
-circulation indices); and (iii) \textbf{the magnitude of the largest events}
-carries weak but robust predictability tied to antecedent convective instability
-(CAPE/CIN), with a continuous-ranked-probability skill over climatology whose
-bootstrap interval excludes zero across four independent train/test splits. The
-effects are small --- precipitation extremes are intrinsically hard --- but
-real, physically grounded, and rigorously established.
+bake-off of models from logistic regression and gradient-boosted trees to a deep
+Gaussian-process extreme-value hurdle, we find --- consistently in both cities ---
+that (i) \textbf{simple calibrated models outperform the elaborate ones}, and the
+choice of response distribution dominates model class; (ii) \textbf{occurrence} of
+an extreme is weakly but genuinely predictable from antecedent state (led by
+convective-instability and circulation indices); and (iii) \textbf{the magnitude
+of the largest events} carries weak but robust predictability tied to antecedent
+convective instability (CAPE/CIN), with a continuous-ranked-probability skill over
+climatology whose moving-block bootstrap interval excludes zero across four
+independent train/test splits in each city. The effects are small ---
+precipitation extremes are intrinsically hard --- but real, physically grounded,
+rigorously established, and \textbf{stronger in the more convective Paris},
+indicating they are not an artefact of one location.
 \end{abstract}
 
 \noindent\textbf{Keywords:} predictability; extreme-value theory; proper scoring
@@ -170,26 +173,32 @@ hurdle with conformal calibration.
   resist the single-seed and quantile-selection artefacts that inflate apparent
   skill, and to demonstrate that conformal coverage is insufficient as a
   stand-alone measure of forecast quality.
-  \item A \textbf{rigorous predictability assessment}: occurrence of an extreme
-  is weakly but genuinely predictable from antecedent state; and the
-  \emph{magnitude} of the largest events carries weak but robust predictability
-  tied to antecedent \textbf{convective instability} (CAPE/CIN), with a CRPS
-  skill over climatology whose bootstrap interval excludes zero across four
-  independent train/test splits.
+  \item A \textbf{rigorous predictability assessment, replicated in two
+  contrasting cities}: occurrence of an extreme is weakly but genuinely
+  predictable from antecedent state; and the \emph{magnitude} of the largest
+  events carries weak but robust predictability tied to antecedent \textbf{convective
+  instability} (CAPE/CIN), with a CRPS skill over climatology whose moving-block
+  bootstrap interval excludes zero across four independent train/test splits in
+  each city --- and is stronger in the more convective Paris, indicating the
+  signal is not location-specific.
   \item A \textbf{cautionary methodological finding}: across the bake-off,
-  \emph{simpler calibrated models outperform the elaborate deep-GP--EVT model},
-  and the choice of response distribution dominates model class (common
-  heavy-tailed choices are badly miscalibrated).
+  \emph{simpler calibrated models (logistic regression, gradient-boosted trees)
+  outperform the elaborate deep-GP--EVT model}, the choice of response
+  distribution dominates model class, and a sensitivity analysis shows it is the
+  added \emph{depth} that fails on this low-signal problem --- a plain Gaussian
+  process is competitive.
   \item As a methodological by-product, a \textbf{dependent (coregionalised)
   hurdle} that borrows strength between occurrence and intensity, validated on
   synthetic data.
 \end{enumerate}
 
-Empirically, we study the daily standardised precipitation index for London over
-1989--2018. The $95$th-percentile index (with $417$ extreme days) is the primary
-target, as the rarer $99$th-percentile index ($137$ events) is too data-scarce
-for the held-out intensity analysis (its occurrence-only results are in the
-Supplementary Material). Predictors are strictly antecedent ERA5 atmospheric drivers (circulation,
+Empirically, we study the daily standardised precipitation index over 1989--2018
+for two cities of contrasting climate: London (maritime, $417$ extreme days at the
+$95$th percentile) and Paris (more continental and convective, $607$ extreme
+days). The $95$th-percentile index is the primary target; the rarer
+$99$th-percentile index ($137$ events for London) is too data-scarce for the
+held-out intensity analysis (its occurrence-only results are in the Supplementary
+Material). Predictors are strictly antecedent ERA5 atmospheric drivers (circulation,
 moisture, and convective-instability fields) and large-scale teleconnection
 indices. Because the index is itself an ERA5-derived precipitation product, we
 exclude all precipitation fields from the predictors and lag every driver, so the
@@ -307,33 +316,36 @@ predictability assessment, rather than a new architecture, is the gap we fill.
 \section{Data}\label{sec:data}
 % ===========================================================================
 
-\subsection{The London precipitation-extreme index}\label{sec:data-index}
-Our response variable is a standardised daily precipitation-extreme index for
-London derived from the Copernicus Climate Data Store product \emph{Extreme
-precipitation risk indicators for Europe and European cities (1950--2019)}. The
-underlying field is the ERA5 reanalysis dynamically downscaled to a
-$2\,\mathrm{km}\times2\,\mathrm{km}$ grid (ERA5-2km) with urban
-parameterisation, which resolves London as $53$ grid cells. For each cell and
-day the indicator is the standardised exceedance
+\subsection{The precipitation-extreme index}\label{sec:data-index}
+Our response variable is a standardised daily precipitation-extreme index,
+computed for two European cities --- \textbf{London} and \textbf{Paris} ---
+derived from the Copernicus Climate Data Store product \emph{Extreme precipitation
+risk indicators for Europe and European cities (1950--2019)}. The underlying field
+is the ERA5 reanalysis dynamically downscaled to a
+$2\,\mathrm{km}\times2\,\mathrm{km}$ grid (ERA5-2km) with urban parameterisation,
+which resolves London as $53$ and Paris as $157$ grid cells. For each cell and day
+the indicator is the standardised exceedance
 \begin{equation}\label{eq:index-def}
 \Ind \;=\; \frac{P}{P_q},
 \end{equation}
 where $P$ is daily precipitation and $P_q$ is the fixed $q$th percentile of wet
 days ($P\ge 1\,\mathrm{mm}$) over the 1950--2019 reference period. The index is
 dimensionless, and $\Ind>1$ marks an extreme: precipitation exceeding the
-historical $q$th-percentile level. We study both the $q=95$ and $q=99$
-thresholds. To obtain a single city-level series we take the daily maximum of
-$\Ind$ over the $53$ cells, so an extreme day is one on which \emph{any} part of
-London exceeds its threshold. We analyse the thirty-year record
-1989--2018, extending the ten-year (2009--2018) record used in preliminary work
-by a factor of three to enlarge the scarce set of extreme examples.
+historical $q$th-percentile level. To obtain a single city-level series we take the
+daily maximum of $\Ind$ over the city's cells, so an extreme day is one on which
+\emph{any} part of the city exceeds its threshold. We analyse the thirty-year
+record 1989--2018 at the $q=95$ (primary) and $q=99$ thresholds. The two cities
+are chosen for their contrasting climates: London's maritime regime versus Paris's
+more continental, more convective one --- a deliberate test of whether conclusions
+generalise.
 
 \subsection{Exploratory characteristics}\label{sec:data-eda}
 The series comprises $10{,}957$ daily observations. Its defining features ---
 which directly motivate the modelling choices of Section~\ref{sec:method} ---
-are summarised in Table~\ref{tab:data} and Figure~\ref{fig:data}. First, extremes are \emph{rare}:
-$3.8\%$ of days at the $95$th percentile and only $1.3\%$ at the $99$th, the
-latter giving just $137$ extreme days in thirty years. Second, the index is
+are summarised in Table~\ref{tab:data} and Figure~\ref{fig:data}, and are shared
+by both cities. First, extremes are \emph{rare}: $3.8\%$ of London days and
+$5.5\%$ of Paris days exceed the $95$th-percentile threshold (and only $1.3\%$ at
+the $99$th in London). Second, the index is
 \emph{zero-inflated and heavy-tailed}: about a quarter of days are exactly zero,
 the median is below $0.02$, yet the maximum exceeds $6$ at the $95$th-percentile
 standardisation --- a strong right skew incompatible with a Gaussian response.
@@ -348,21 +360,25 @@ forecaster is modest --- one reason that drivers beyond the index's own history
 \begin{table}[t]
 \centering
 \small
-\caption{Summary characteristics of the London precipitation-extreme index
-(1989--2018; $N=10{,}957$ days), by standardisation threshold. Extreme days are
-those with $\Ind>1$.}
+\caption{Summary characteristics of the $95$th-percentile precipitation-extreme
+index (1989--2018; $N=10{,}957$ days) for the two cities. Extreme days are those
+with $\Ind>1$. Paris is more convective: more cells, more extremes, a heavier
+tail. (London's $99$th-percentile statistics --- $137$ extreme days --- are used
+only in the Supplementary Material.)}
 \label{tab:data}
 \begin{tabular}{lcc}
 \toprule
-& \textbf{$95$th percentile} & \textbf{$99$th percentile}\\
+& \textbf{London} & \textbf{Paris}\\
+& {\small(maritime)} & {\small(continental)}\\
 \midrule
-Extreme days (total)            & $417$ & $137$\\
-Extreme rate (\%)               & $3.81$ & $1.25$\\
-\;\;train 1989--2008 ($7{,}305$ d) & $287$ ($3.93\%$) & $101$ ($1.38\%$)\\
-\;\;test\phantom{i} 2009--2018 ($3{,}652$ d) & $130$ ($3.56\%$) & $36$ ($0.99\%$)\\
-Days equal to zero (\%)         & \multicolumn{2}{c}{$25.5$}\\
-Median index                    & $0.016$ & $0.010$\\
-Maximum index                   & $6.46$ & $3.95$\\
+Grid cells                      & $53$ & $157$\\
+Extreme days (total)            & $417$ & $607$\\
+Extreme rate (\%)               & $3.81$ & $5.54$\\
+\;\;train 1989--2008 ($7{,}305$ d) & $287$ ($3.93\%$) & $396$ ($5.42\%$)\\
+\;\;test\phantom{i} 2009--2018 ($3{,}652$ d) & $130$ ($3.56\%$) & $211$ ($5.78\%$)\\
+Days equal to zero (\%)         & $25.5$ & $28.7$\\
+Median index                    & $0.015$ & $0.012$\\
+Maximum index                   & $6.46$ & $8.91$\\
 Peak season                     & \multicolumn{2}{c}{July--August}\\
 \bottomrule
 \end{tabular}
@@ -370,7 +386,8 @@ Peak season                     & \multicolumn{2}{c}{July--August}\\
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_data}
-\caption{The London $95$th-percentile precipitation-extreme index, 1989--2018.
+\caption{The London $95$th-percentile precipitation-extreme index, 1989--2018
+(Paris is qualitatively similar).
 \textbf{(a)} Daily series with extreme days ($\Ind>1$) marked and the train/test
 split; \textbf{(b)} the distribution is zero-inflated ($\sim$a quarter of days
 are exactly zero) and strongly right-skewed (log count); \textbf{(c)} extremes
@@ -390,7 +407,7 @@ three groups.
   exceedances, and harmonic encodings of day-of-year and month to capture
   seasonality.
   \item \textbf{ERA5 atmospheric drivers.} Antecedent fields from the ERA5
-  reanalysis over a synoptic-scale window around London: mean sea-level pressure
+  reanalysis over a synoptic-scale window around each city: mean sea-level pressure
   and its gradients, geopotential height ($500$/$850\,$hPa), specific and
   total-column water vapour, integrated water-vapour transport, near-surface
   temperature and winds, and convective-instability diagnostics --- convective
@@ -496,9 +513,11 @@ the training index, the reference against which every skill score is measured; a
 \emph{stationary peaks-over-threshold} (POT) model adds a Generalised Pareto tail
 fitted to the training excesses but no covariate dependence.
 
-\paragraph{Occurrence: logistic regression.} For the exceedance probability
-$\pi_{t+h}=\Prob(\Ind_{t+h}>u\mid\Filt_t)$ we fit a regularised logistic
-regression on $\bx_t$ --- the natural calibrated occurrence model.
+\paragraph{Occurrence: logistic regression and gradient-boosted trees.} For the
+exceedance probability $\pi_{t+h}=\Prob(\Ind_{t+h}>u\mid\Filt_t)$ we fit a
+regularised logistic regression on $\bx_t$ --- the natural calibrated occurrence
+model --- and, as a strong non-linear machine-learning baseline, an
+isotonic-calibrated gradient-boosted-tree classifier (XGBoost).
 
 \paragraph{Full-distribution zero-inflated regression.} Rather than hurdle at the
 extreme threshold --- which restricts intensity estimation to the few
@@ -630,9 +649,14 @@ training set only, so the test set never informs model selection.
 
 \paragraph{Robustness.} Skill scores are computed against a climatological
 reference (the empirical training distribution). Every estimate carries a
-confidence interval from $1{,}000$--$2{,}000$ bootstrap resamples of the test
-extreme days, and the intensity result is repeated across the four forward-only,
-expanding-window splits of Section~\ref{sec:data-split}. Discrimination metrics
+\emph{moving-block} bootstrap confidence interval ($1{,}000$--$2{,}000$ resamples,
+block of ten extreme days, to respect short-range temporal dependence), and the
+intensity result is repeated across the four forward-only, expanding-window splits
+of Section~\ref{sec:data-split} \emph{and across the two cities}. Per-feature
+significance is controlled for multiplicity by the Benjamini--Hochberg
+false-discovery rate, and feature importance is quantified by stability selection
+(selection frequency under subsampling). The deep-GP model is probed by a
+sensitivity sweep over inducing points and kernel depth. Discrimination metrics
 (precision--recall AUC) are reported only as secondary context, and conformal
 coverage is reported but, per Section~\ref{sec:conformal}, never as evidence of
 predictive quality.
@@ -641,49 +665,67 @@ predictive quality.
 \section{Results}\label{sec:results}
 % ===========================================================================
 
-We evaluate every model on the London $95$th-percentile index by the proper
-scores of Section~\ref{sec:metrics} against a climatological reference, with
-stochastic results seed-averaged and intensity skills carrying bootstrap
-confidence intervals. Beyond the main bake-off (Section~\ref{sec:res-bakeoff}) we
-report an $L_1$-regularised feature screen identifying which covariates carry
-occurrence and intensity signal; the hold-out intensity test across the four
-expanding-window splits; a seed-averaged horizon sweep $h\in\{1,3,7,14,28\}$; and
-a synthetic study, with a known occurrence--intensity correlation, validating the
-dependent hurdle.
+We evaluate every model on the $95$th-percentile index of \emph{both cities} by
+the proper scores of Section~\ref{sec:metrics} against a climatological reference,
+with stochastic results seed-averaged and intensity skills carrying moving-block
+bootstrap confidence intervals. Beyond the main bake-off
+(Section~\ref{sec:res-bakeoff}) we report a feature screen (with false-discovery
+control and stability selection) identifying which covariates carry occurrence and
+intensity signal; the hold-out intensity test across four expanding-window splits;
+a deep-GP sensitivity sweep; a seed-averaged horizon sweep $h\in\{1,3,7,14,28\}$;
+and a synthetic study validating the dependent hurdle. Throughout, we ask whether
+conclusions hold across the two contrasting cities.
 
 \subsection{Simpler models win; distribution choice dominates}\label{sec:res-bakeoff}
-Table~\ref{tab:bakeoff} reports the bake-off. Three findings stand out. First,
-the elaborate deep-GP--EVT hurdle is \emph{worse than climatology} on both the
-Brier and tail-CRPS skill scores (Brier skill $\approx-0.4$), while a plain
-calibrated logistic regression and the zero-inflated extended-GPD regression are
-the best occurrence models. Second, the choice of response distribution matters
-more than model class: a zero-inflated log-normal is substantially
-miscalibrated (tail-CRPS skill $\approx-2$), whereas the light-tailed gamma and
-the threshold-free extended GPD are well behaved --- the index tail is lighter
-than a log-normal or a low-threshold Generalised Pareto fit assumes. Third,
-modelling the \emph{full} zero-inflated distribution (and deriving the exceedance
-probability from it) is far better than hurdling at the extreme threshold, which
-starves the tail of data.
+Table~\ref{tab:bakeoff} reports the bake-off, and the same three findings hold in
+\emph{both} cities. First, the elaborate deep-GP--EVT hurdle is \emph{worse than
+climatology} on both skill scores (Brier skill $\approx-0.4$ in each city), while
+the best occurrence models are a plain calibrated logistic regression and the
+gradient-boosted-tree (XGBoost) classifier --- two standard, inexpensive models.
+Second, the choice of response distribution matters more than model class: a
+zero-inflated log-normal is substantially miscalibrated (tail-CRPS skill $-2.3$ in
+London), whereas the light-tailed gamma and the threshold-free extended GPD are
+well behaved; the index tail is lighter than a log-normal or a low-threshold
+Generalised Pareto fit assumes. Third, modelling the \emph{full} zero-inflated
+distribution and deriving the exceedance probability from it beats hurdling at the
+extreme threshold, which starves the tail of data. Quantitatively everything is
+\emph{stronger in Paris} (e.g.\ logistic Brier skill $+0.117$ versus London's
+$+0.038$), reflecting its larger, more convective extreme sample; indeed in Paris
+the extended GPD even beats climatology on the full-predictive tail score
+(twCRPSS $+0.052$), which it could not in data-scarcer London.
 
 \begin{table}[t]
 \centering\small
-\caption{Model bake-off on London $95$th, $h=1$ (seed-averaged). Brier skill
-score (BSS) and tail-CRPS skill (twCRPSS) are relative to climatology; positive
-is better. RES is Brier resolution (informativeness, $\times10^3$).}
+\caption{Model bake-off at the $95$th percentile, $h=1$ (seed-averaged), for both
+cities. Brier skill score (BSS) and tail-CRPS skill (twCRPSS) are relative to
+climatology; positive is better. Logistic and XGBoost are occurrence-only (no
+twCRPSS). The qualitative ordering is identical across cities.}
 \label{tab:bakeoff}
-\begin{tabular}{lccc}
+\begin{tabular}{lcccc}
 \toprule
-\textbf{Model} & \textbf{BSS} & \textbf{RES}$\times10^3$ & \textbf{twCRPSS} \\
+& \multicolumn{2}{c}{\textbf{London}} & \multicolumn{2}{c}{\textbf{Paris}}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+\textbf{Model} & \textbf{BSS} & \textbf{twCRPSS} & \textbf{BSS} & \textbf{twCRPSS} \\
 \midrule
-Climatology / stationary POT      & $0.000$ & $0.0$ & $0.000$ \\
-Logistic ($+$ERA5)                & $\mathbf{+0.038}$ & $0.83$ & --- \\
-ZI log-normal ($+$ERA5)           & $-0.29$ & --- & $-2.27$ \\
-ZI gamma ($+$ERA5)                & $+0.008$ & $0.79$ & $-0.06$ \\
-ZI extended-GPD ($+$ERA5)         & $+0.012$ & $0.70$ & $\mathbf{-0.045}$ \\
-Deep-GP--EVT hurdle (TCDGP)       & $\approx-0.4$ & $0.02$ & $\approx-0.3$ \\
+Climatology / stationary POT  & $0.000$ & $0.000$ & $0.000$ & $0.000$ \\
+Logistic ($+$ERA5)            & $\mathbf{+0.038}$ & --- & $\mathbf{+0.117}$ & --- \\
+XGBoost ($+$ERA5)             & $+0.034$ & --- & $+0.101$ & --- \\
+ZI gamma ($+$ERA5)            & $+0.008$ & $-0.06$ & $+0.090$ & $+0.046$ \\
+ZI extended-GPD ($+$ERA5)     & $+0.012$ & $-0.045$ & $+0.093$ & $\mathbf{+0.052}$ \\
+ZI log-normal ($+$ERA5)       & $-0.29$ & $-2.27$ & $-0.04$ & $-0.76$ \\
+Deep-GP--EVT hurdle (TCDGP)   & $\approx-0.4$ & $\approx-0.3$ & $\approx-0.4$ & $\approx-0.3$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\paragraph{Is the deep-GP failure a tuning artefact?} No. A sensitivity sweep over
+inducing points ($M\in\{32,64,128\}$) leaves the deep-kernel GP well below
+climatology in both cities (Brier skill $-0.2$ to $-0.7$). The decisive comparison
+is depth: replacing the deep kernel with a \emph{plain} GP recovers a competitive
+model (Brier skill $+0.029$ in London, $+0.123$ in Paris) --- so it is the added
+depth, not the Gaussian-process framework, that fails on this low-signal problem.
+The elaborate model is thus dominated not because GPs are unsuitable but because
+the extra flexibility cannot be supported by so few informative events.
 
 \subsection{Conformal coverage does not imply forecast quality}\label{sec:res-cal}
 The tail-conformal layer attains its nominal $0.90$ coverage on the real series
@@ -710,55 +752,72 @@ coverage. Climatology is a single point at the base rate.}
 \end{figure}
 
 \subsection{Predictability of occurrence}\label{sec:res-occ}
-Occurrence is weakly but genuinely predictable: the best calibrated model
-improves on climatology with a Brier skill of $+0.038$ and positive resolution
-(Table~\ref{tab:bakeoff}). An $L_1$-regularised logistic identifies physically
-sensible antecedent predictors --- led by the \textbf{K-index} of convective
-instability, the $500$\,hPa geopotential, integrated vapour transport, low-level
-humidity, and season. Skill nonetheless decays toward the prevalence floor as the
-forecast horizon grows (Figure~\ref{fig:horizon}a), consistent with the limited
-day-scale persistence of London extremes. At the rarer $99$th-percentile
-threshold, where the scarce data support only an occurrence analysis, the
-qualitative picture is unchanged (Supplementary Material).
+Occurrence is weakly but genuinely predictable in both cities: the best calibrated
+model improves on climatology with a Brier skill of $+0.038$ in London and
+$+0.117$ in the more convective Paris (Table~\ref{tab:bakeoff}), with positive
+resolution. An $L_1$-regularised logistic identifies physically sensible
+antecedent predictors --- led by the \textbf{K-index} of convective instability,
+the $500$\,hPa geopotential, integrated vapour transport, low-level humidity, and
+season --- and stability selection confirms their robustness: the K-index and the
+most recent index lag are selected in essentially every training subsample.
+Skill nonetheless decays toward the prevalence floor as the forecast horizon grows
+(Figure~\ref{fig:horizon}a), consistent with the limited day-scale persistence of
+these extremes. At the rarer $99$th-percentile threshold (London), where the
+scarce data support only an occurrence analysis, the qualitative picture is
+unchanged (Supplementary Material).
 
 \subsection{Predictability of intensity}\label{sec:res-int}
 Whether the \emph{magnitude} of an extreme is predictable is the more delicate
-question, and the answer is a qualified yes. On the extreme days, $23$ of $49$
-antecedent features correlate with the excess at $p<0.05$ (versus $\sim2$ by
-chance), led by convective inhibition and CAPE. To test whether this signal
-generalises, we fit quantile regressions of the excess on held-out extreme days
-(regularisation chosen by cross-validation on the training set only) and score
-them by the continuous ranked probability score of the excess against the
-climatological excess distribution. The CRPS skill is small but its bootstrap
-interval \emph{excludes zero}, and --- crucially --- it remains positive across
-four independent expanding-window splits (Table~\ref{tab:intensity},
-Figure~\ref{fig:intensity}). The signal is concentrated in the upper tail (the
-largest events) and is carried by antecedent convective instability (CAPE/CIN).
-Median magnitude, by contrast, is indistinguishable from climatology.
+question, and the answer is a qualified yes --- in both cities. On the extreme
+days, many antecedent features correlate with the excess far beyond chance, and
+the association survives multiplicity control: $21$ of $49$ features in London and
+$27$ of $49$ in Paris pass a Benjamini--Hochberg false-discovery threshold (versus
+$\sim2$ expected), led by convective inhibition and CAPE in both. To test whether
+this signal generalises out of sample, we fit quantile regressions of the excess
+on held-out extreme days (regularisation chosen by cross-validation on the
+training set only) and score them by the CRPS of the excess against the
+climatological excess distribution. The CRPS skill is small but its moving-block
+bootstrap interval \emph{excludes zero} in each city (London $+0.014$,
+$[+0.009,+0.019]$; Paris $+0.036$, $[+0.005,+0.074]$), and it remains positive
+across four independent expanding-window splits per city (Table~\ref{tab:intensity},
+Figure~\ref{fig:intensity}), with every interval excluding zero. The signal is
+concentrated in the upper tail (the largest events) and is carried by antecedent
+convective instability (CAPE/CIN); median magnitude is indistinguishable from
+climatology. As with occurrence, intensity predictability is stronger in the more
+convective Paris.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.72\linewidth]{figures/fig_intensity}
-\caption{Hold-out intensity predictability: CRPS-of-excess skill over climatology,
-with $90\%$ bootstrap confidence intervals, across four forward-only
-expanding-window train/test splits. The skill is small but its interval excludes
-zero in every split.}
+\caption{Hold-out intensity predictability for both cities: CRPS-of-excess skill
+over climatology, with $90\%$ moving-block bootstrap intervals, across four
+forward-only expanding-window train/test splits. The skill is small but its
+interval excludes zero in every split and city, and is larger in Paris.}
 \label{fig:intensity}
 \end{figure}
 
 \begin{table}[t]
 \centering\small
-\caption{Hold-out intensity predictability: CRPS-of-excess skill over climatology
-across forward-only expanding-window splits, with $90\%$ bootstrap intervals.}
+\caption{Hold-out intensity predictability in both cities: CRPS-of-excess skill
+over climatology across forward-only expanding-window splits, with $90\%$
+moving-block bootstrap intervals. Every interval excludes zero; the effect is
+larger in Paris.}
 \label{tab:intensity}
 \begin{tabular}{lcccc}
 \toprule
-\textbf{Test period} & \textbf{\# test extremes} & \textbf{CRPS skill} & \textbf{$90\%$ CI} & \textbf{P($>0$)} \\
+\textbf{Test period} & \textbf{\# test ext.} & \textbf{CRPS skill} & \textbf{$90\%$ CI} & \textbf{P($>0$)} \\
 \midrule
-2003--2018 & $213$ & $+0.037$ & $[+0.021,+0.051]$ & $1.00$ \\
-2006--2018 & $175$ & $+0.027$ & $[+0.015,+0.041]$ & $1.00$ \\
-2009--2018 & $130$ & $+0.035$ & $[+0.021,+0.051]$ & $1.00$ \\
-2012--2018 & $\phantom{0}96$ & $+0.034$ & $[+0.009,+0.061]$ & $0.98$ \\
+\multicolumn{5}{l}{\emph{London}}\\
+2003--2018 & $213$ & $+0.037$ & $[+0.020,+0.051]$ & $1.00$ \\
+2006--2018 & $175$ & $+0.027$ & $[+0.015,+0.039]$ & $1.00$ \\
+2009--2018 & $130$ & $+0.035$ & $[+0.021,+0.050]$ & $1.00$ \\
+2012--2018 & $\phantom{0}96$ & $+0.034$ & $[+0.006,+0.059]$ & $0.97$ \\
+\midrule
+\multicolumn{5}{l}{\emph{Paris}}\\
+2003--2018 & $329$ & $+0.043$ & $[+0.019,+0.064]$ & $1.00$ \\
+2006--2018 & $275$ & $+0.043$ & $[+0.019,+0.064]$ & $1.00$ \\
+2009--2018 & $211$ & $+0.035$ & $[+0.008,+0.061]$ & $0.99$ \\
+2012--2018 & $164$ & $+0.046$ & $[+0.019,+0.073]$ & $0.99$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -809,38 +868,53 @@ from antecedent convective-instability and circulation indices
 predictable from antecedent convective instability, with a CRPS skill over
 climatology that excludes zero across four independent splits
 (Section~\ref{sec:res-int}). The dependent-hurdle mechanism is separately
-validated on synthetic data (Section~\ref{sec:res-synth}).
+validated on synthetic data (Section~\ref{sec:res-synth}). Every one of these
+conclusions holds in \emph{both} London and Paris, and is quantitatively stronger
+in the more convective Paris --- evidence that they reflect the meteorology of
+precipitation extremes rather than the idiosyncrasies of one city.
 
 % ===========================================================================
 \section{Discussion}\label{sec:discussion}
 % ===========================================================================
 
 \paragraph{Predictability is real but small, and physically interpretable.}
-The headline is not a forecasting triumph but an honest measurement: for London,
-the occurrence of a daily precipitation extreme and the magnitude of the largest
-events both carry weak antecedent predictability, on the order of a few percent
-of CRPS skill over climatology. That this signal is led by convective-instability
-indices (the K-index for occurrence; CAPE and convective inhibition for the
-intensity of the largest events) is reassuring: it is the thermodynamics one
-would expect to govern intense convective rainfall, and it argues against the
-skill being an artefact. The median magnitude of an extreme, by contrast, is
+The headline is not a forecasting triumph but an honest measurement: in both
+cities, the occurrence of a daily precipitation extreme and the magnitude of the
+largest events carry weak antecedent predictability, on the order of a few percent
+of CRPS skill over climatology. Such effect sizes are modest but not unusual for
+precipitation at these lead times --- sub-seasonal precipitation forecast skill is
+itself typically small --- and their practical value lies less in a sharp point
+forecast than in \emph{trustworthy, calibrated} probabilities, plus a slim but
+real edge for anticipating the most intense events. That the signal is led by
+convective-instability indices (the K-index for occurrence; CAPE and convective
+inhibition for intensity) is reassuring: it is the thermodynamics one would expect
+to govern intense convective rainfall, it argues against the skill being an
+artefact, and it is precisely why the effects are \emph{larger in the more
+convective Paris}. The median magnitude of an extreme, by contrast, is
 indistinguishable from climatology: once an exceedance occurs, its size is largely
-unpredictable except in the upper tail.
+unpredictable except in the upper tail. One nuance reinforces the data-dependence
+of these statements: in data-scarcer London no model beats the empirical
+climatological tail on the full-predictive score, but in Paris --- with half again
+as many extremes --- the extended GPD does, so ``the tail is climatology-bound''
+is a sample-size effect, not a universal law.
 
 \paragraph{Methodological lessons.} Three are worth emphasising. First,
-\emph{model complexity did not pay}: a deep Gaussian-process extreme-value hurdle
-was beaten by logistic regression and by simple zero-inflated distributional
-regressions. Gaussian processes earn their keep through structure (notably
-spatial structure), and a single-site temporal problem offers them little to
-exploit. Second, the \emph{response distribution dominates}: a log-normal tail
-was substantially miscalibrated, and hurdling at the extreme threshold starved
-the tail of data; modelling the full zero-inflated distribution with a
-threshold-free extended GPD was far better. Third, and most importantly for the
-literature, \emph{conformal coverage is insufficient as a stand-alone indicator of
-forecast quality}: it is attained by construction even by a model that is worse than
-climatology on proper scores. Reporting coverage without a proper-score
-comparison can therefore create a false impression of a good probabilistic
-forecast.
+\emph{model complexity did not pay}: in both cities a deep Gaussian-process
+extreme-value hurdle was beaten by logistic regression, by gradient-boosted trees,
+and by simple zero-inflated distributional regressions. A sensitivity analysis
+localises the failure to the added \emph{depth} --- a plain Gaussian process is
+competitive, but the deep kernel cannot be supported by so few informative events;
+Gaussian processes earn their keep through structure (notably spatial structure),
+which a single-site temporal problem does not provide. Second, the \emph{response
+distribution dominates}: a log-normal tail was substantially miscalibrated, and
+hurdling at the extreme threshold starved the tail of data; modelling the full
+zero-inflated distribution with a threshold-free extended GPD was far better.
+Third, and most relevant to the wider literature, \emph{conformal coverage is
+insufficient as a stand-alone indicator of forecast quality}: it is attained by
+construction even by a model worse than climatology on proper scores. This is a
+known property of coverage, but our experiments make it concrete --- reporting
+coverage without a proper-score comparison can create a false impression of a good
+probabilistic forecast.
 
 \paragraph{Why rigour mattered here.} Several apparent results did not survive
 scrutiny: a single-seed driver benefit and an apparent long-horizon gain both
@@ -851,27 +925,40 @@ scoring, cross-validated model selection, bootstrap intervals, and multi-split
 robustness. In a low-signal regime these safeguards are not optional --- they are
 the difference between a finding and an artefact.
 
-\paragraph{Limitations.} The study is single-site and uses a perfect-prognosis
-design (antecedent reanalysis fields, not operational forecasts); the intensity
-analysis conditions on observed exceedances and so isolates predictability rather
-than delivering an end-to-end forecast; and the index is itself an ERA5-derived
-product, which we mitigate by excluding all precipitation fields and lagging every
-predictor.
+\paragraph{Limitations.} The study covers two cities --- a step beyond a single
+site, but still a limited sample of European urban climates, so we frame the
+results as a careful two-city assessment rather than a continent-wide claim. It
+uses a perfect-prognosis design (antecedent reanalysis fields, not operational
+forecasts), and the intensity analysis conditions on observed exceedances, so it
+isolates predictability rather than delivering an end-to-end warning. Finally, the
+index is itself an ERA5-derived precipitation product, which raises a circularity
+concern. We address it in two ways: no precipitation field of any kind enters the
+predictors, and every driver is strictly lagged, so the predictors are antecedent
+dynamical and thermodynamic state (pressure, geopotential, humidity, instability),
+never the rainfall itself. Using antecedent state to predict future precipitation
+is the standard perfect-prognosis setting; the residual caveat --- that a
+reanalysis is internally consistent across variables and time --- cannot make a
+strictly-lagged, non-precipitation predictor circular, but is worth keeping in
+mind, and would be removed entirely by moving to numerical-weather-prediction
+forecast drivers (future work).
 
 % ===========================================================================
 \section{Conclusion}\label{sec:conclusion}
 % ===========================================================================
 
 We set out to measure, rather than merely to model, the predictability of rare
-precipitation extremes in London, and to do so with an evaluation protocol robust
-to the pitfalls of a low-signal setting. The answer is a qualified, quantified
-``a little'': occurrence and the magnitude of the largest events are weakly but
-genuinely predictable from antecedent convective instability, while simpler
-calibrated models suffice and conformal coverage is no substitute for a
-proper-score comparison. Natural extensions are the directions in which more
-signal --- and a genuine role for structured Gaussian-process models --- is most
-plausible: \emph{spatial} modelling across the grid of cells and across European
-cities, \emph{operational} drivers from numerical weather prediction in place of
+precipitation extremes, and to do so with an evaluation protocol robust to the
+pitfalls of a low-signal setting. The answer, consistent across two climatically
+contrasting cities, is a qualified, quantified ``a little'': occurrence and the
+magnitude of the largest events are weakly but genuinely predictable from
+antecedent convective instability, while simpler calibrated models suffice and
+conformal coverage is no substitute for a proper-score comparison. That every
+finding holds --- and strengthens --- in the more convective Paris is itself
+evidence that these are properties of precipitation extremes, not of one city.
+Natural extensions are the directions in which more signal, and a genuine role for
+structured Gaussian-process models, are most plausible: more cities to map the
+predictability across climates, \emph{spatial} modelling across the grid of cells,
+\emph{operational} drivers from numerical weather prediction in place of
 reanalysis, and \emph{sub-seasonal} aggregations where slowly varying drivers may
 contribute. Whether predictability rises materially in those settings is, in the
 spirit of this paper, a question to be settled by proper scores and confidence
@@ -881,19 +968,20 @@ intervals rather than asserted.
 \section*{Data and code availability}\label{sec:availability}
 \addcontentsline{toc}{section}{Data and code availability}
 % ===========================================================================
-The underlying data are publicly available: the London precipitation-extreme
-index derives from the Copernicus Climate Data Store product \emph{Extreme
-precipitation risk indicators for Europe and European cities (1950--2019)}, and
-the atmospheric predictors from ERA5 (Copernicus CDS,
+The underlying data are publicly available: the London and Paris
+precipitation-extreme indices derive from the Copernicus Climate Data Store
+product \emph{Extreme precipitation risk indicators for Europe and European cities
+(1950--2019)}, and the atmospheric predictors from ERA5 (Copernicus CDS,
 \texttt{reanalysis-era5-single-levels}; and the WeatherBench2 regridded ERA5
 archive) and from the NOAA teleconnection indices. The code accompanying this
-paper --- implementations of all models (logistic, the zero-inflated
-log-normal/gamma/eGPD distributional regressions, and the deep-GP--EVT hurdle),
-the full evaluation protocol (proper scores, the hold-out intensity test,
-bootstrap and multi-split robustness), the data-retrieval and feature-processing
-scripts, and the scripts that produce every figure and table --- together with
-the processed daily feature table, will be deposited in a public repository
-(\textsc{[repository url / archived doi to be inserted on acceptance]}).
+paper --- implementations of all models (logistic, gradient-boosted trees, the
+zero-inflated log-normal/gamma/eGPD distributional regressions, and the
+deep-GP--EVT hurdle), the full evaluation protocol (proper scores, the hold-out
+intensity test, moving-block bootstrap and multi-split robustness), the
+data-retrieval and feature-processing scripts, and the scripts that produce every
+figure and table --- together with the processed daily feature tables for both
+cities, are available in a repository made public on acceptance
+(\textsc{[repository url / archived doi to be inserted]}).
 
 % ===========================================================================
 \appendix
@@ -914,8 +1002,9 @@ ERA5-derived precipitation product.
 over the previous $7$ and $30$ days; rolling maximum over $7$ days; count of
 exceedances in the previous $30$ days; and $\sin/\cos$ harmonics of day-of-year.
 \item \textbf{ERA5 circulation and moisture} (WeatherBench2, $1.5^\circ$, daily
-means over a London-centred box, $45$--$60^\circ$N, $20^\circ$W--$10^\circ$E):
-mean sea-level pressure and its meridional/zonal gradients, total-column water
+means over a city-centred synoptic box, $\sim15^\circ\times30^\circ$ --- e.g.\
+$45$--$60^\circ$N, $20^\circ$W--$10^\circ$E for London, shifted south-east for
+Paris): mean sea-level pressure and its meridional/zonal gradients, total-column water
 vapour, $2$\,m temperature, $10$\,m wind components and speed, geopotential at
 $500$ and $850$\,hPa, and specific humidity at $850$\,hPa.
 \item \textbf{ERA5 convective instability} (Copernicus CDS,

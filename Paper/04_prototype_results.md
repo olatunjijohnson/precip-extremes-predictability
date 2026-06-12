@@ -234,6 +234,45 @@ K-index / Z500 / IVT); intensity weakly but **robustly** predictable (CRPS-of-ex
 across splits, CIs exclude 0, led by **CAPE/CIN convective instability**). Both effects are small —
 a genuinely hard problem — but both are real, physically grounded, and survive rigorous testing.
 
+## (8) TWO-CITY GENERALITY: Paris (continental) vs London — every finding holds, intensity stronger
+
+Second city (reviewer's main ask): Paris, a contrasting continental/convective regime, 607 extreme
+days (vs London 417). Same pipeline, Paris ERA5 box. All analyses re-run.
+
+**Bake-off (+ERA5, seed-averaged):**
+| metric | London | Paris |
+|--------|-------:|------:|
+| logistic BSS | +0.038 | **+0.117** |
+| XGBoost BSS | +0.034 | +0.101 |
+| ZI-eGPD BSS | +0.012 | +0.093 |
+| ZI-eGPD twCRPSS | −0.045 | **+0.052** |
+| ZI-lognormal twCRPSS (bad) | −2.27 | −0.76 |
+| deep-GP–EVT BSS | ≈−0.4 | ≈−0.4 |
+
+**Reviewer's deep-GP sensitivity (both cities):** deep-kernel robustly fails (BSS −0.2 to −0.7 across
+M=32–128); **plain GP is competitive** (London +0.029, Paris +0.123). → it is *depth* that fails on
+low signal, not GPs.
+
+**Feature screen (FDR):** K-index leads occurrence in both; CAPE/CIN lead intensity in both.
+Survive Benjamini–Hochberg: London 21/49, **Paris 27/49** (stronger).
+
+**Hold-out intensity (CRPS-of-excess skill vs climatology, moving-block bootstrap):**
+| | London | Paris |
+|---|---|---|
+| CRPS-of-excess skill | +0.014 [+0.009,+0.019] | **+0.036 [+0.005,+0.074]** |
+| q90 pinball skill | +0.05 | +0.086 |
+| multi-split (4 splits) | 4/4 positive, mean +0.033 | **4/4 positive, mean +0.042**, all CIs exclude 0 |
+
+**Conclusion — the paper's claims are NOT London-specific.** Across two contrasting cities:
+(i) simple calibrated models (logistic, XGBoost) and the eGPD beat the deep-GP–EVT; (ii) distribution
+choice dominates (log-normal bad, eGPD good); (iii) occurrence is weakly predictable, led by the
+K-index; (iv) the magnitude of the largest events is predictable from antecedent **CAPE/CIN
+convective instability**, with bootstrap CIs excluding zero across all splits. Effects are
+**stronger in Paris** (more extremes, more convective), as expected. Notably, in Paris the eGPD even
+beats climatology on the full-predictive tail score (twCRPSS +0.052), which it did not in
+data-scarcer London — so "the tail is climatology-bound" is a London-sample-size effect, not a
+universal one.
+
 ## Takeaways for the paper
 1. The full pipeline (deep-kernel coregionalised SVGP → hurdle+GPD → tail
    conformal) is implementable and trains stably.

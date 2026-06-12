@@ -32,21 +32,27 @@ plt.savefig(os.path.join(HERE, "fig_reliability.pdf"), bbox_inches="tight")
 plt.close()
 print("saved fig_reliability.pdf")
 
-# ---------------------------------------------------------------- intensity forest
+# ---------------------------------------------------------------- intensity forest (two cities)
 periods = ["2003--2018", "2006--2018", "2009--2018", "2012--2018"]
-skill = np.array([0.037, 0.027, 0.035, 0.034])
-lo = np.array([0.021, 0.015, 0.021, 0.009])
-hi = np.array([0.051, 0.041, 0.051, 0.061])
-y = np.arange(len(periods))[::-1]
-fig, ax = plt.subplots(figsize=(5.6, 3.0))
-ax.errorbar(skill, y, xerr=[skill - lo, hi - skill], fmt="o", color="#7570b3",
-            ms=6, capsize=4, lw=1.5)
+lon = dict(skill=np.array([0.037, 0.027, 0.035, 0.034]),
+           lo=np.array([0.020, 0.015, 0.021, 0.006]),
+           hi=np.array([0.051, 0.039, 0.050, 0.059]))
+par = dict(skill=np.array([0.043, 0.043, 0.035, 0.046]),
+           lo=np.array([0.019, 0.019, 0.008, 0.019]),
+           hi=np.array([0.064, 0.064, 0.061, 0.073]))
+base = np.arange(len(periods))[::-1]
+fig, ax = plt.subplots(figsize=(6.0, 3.2))
+for d, off, col, lab in [(lon, +0.12, "#444444", "London"),
+                         (par, -0.12, "#7570b3", "Paris")]:
+    ax.errorbar(d["skill"], base + off, xerr=[d["skill"] - d["lo"], d["hi"] - d["skill"]],
+                fmt="o", color=col, ms=6, capsize=4, lw=1.5, label=lab)
 ax.axvline(0, color="crimson", ls="--", lw=1.0)
-ax.set_yticks(y); ax.set_yticklabels(periods)
-ax.set_xlim(-0.01, 0.07)
+ax.set_yticks(base); ax.set_yticklabels(periods)
+ax.set_xlim(-0.01, 0.085)
 ax.set_xlabel("CRPS-of-excess skill over climatology")
 ax.set_ylabel("test period")
-ax.set_title("Hold-out intensity predictability (90\\% bootstrap CI)")
+ax.set_title("Hold-out intensity predictability (90\\% moving-block bootstrap CI)")
+ax.legend(fontsize=8, frameon=False, loc="lower right")
 plt.tight_layout()
 plt.savefig(os.path.join(HERE, "fig_intensity.pdf"), bbox_inches="tight")
 plt.close()
