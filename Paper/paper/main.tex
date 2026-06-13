@@ -555,21 +555,23 @@ with a GP kernel; \citealp{wilson2016deepkernel}) or a deep GP
 zero-inflation and heavy tail of $\Ind$, which motivates the EVT likelihood.
 Full inference details are in Appendix~\ref{app:inference}.
 
-\paragraph{Dependent hurdle (a methodological by-product).} The classical hurdle
-assumes occurrence and intensity are conditionally independent; physically they
-should be positively correlated, and coupling them lets the abundant occurrence
-data inform the data-starved tail. We realise this by giving $(g_\pi,g_\sigma)$ a
-multi-output GP prior with an intrinsic coregionalisation
-\citep{bonilla2008multitask,alvarez2012kernels},
+\paragraph{Dependent hurdle: a fair test of coupling.} To give the elaborate
+model class its best chance, we also test whether \emph{coupling} occurrence and
+intensity helps. The classical hurdle assumes the two are conditionally
+independent; physically they should be positively correlated, and coupling them
+would let the abundant occurrence data inform the data-starved tail. We realise
+this by giving $(g_\pi,g_\sigma)$ a multi-output GP prior with an intrinsic
+coregionalisation \citep{bonilla2008multitask,alvarez2012kernels},
 $\operatorname{Cov}(g_a(\bx),g_b(\bx'))=B_{ab}\,k_\theta(\bx,\bx')$, whose
 off-diagonal yields an interpretable borrowing-strength correlation
 $\rho=B_{\pi\sigma}/\sqrt{B_{\pi\pi}B_{\sigma\sigma}}$ ($\rho=0$ recovers the
 independent hurdle). Because the excess is observed only on extreme days $\rho$
-is weakly identified, so we validate recovery on synthetic data
-(Section~\ref{sec:res-synth}). This construction --- related to correlated
-two-part models in biostatistics and econometrics
-\citep{olsen2001twopart,heckman1979selection} --- is a by-product, not the
-paper's main claim.
+is weakly identified, so we first confirm on synthetic data that the mechanism
+is recoverable and beneficial \emph{when the dependence genuinely exists}
+(Section~\ref{sec:res-synth}); this isolates whether any real-data shortfall is a
+failure of the model or an absence of signal. This construction is related to
+correlated two-part models in biostatistics and econometrics
+\citep{olsen2001twopart,heckman1979selection}.
 
 \paragraph{Implementation.} Logistic regression uses $L_2$ regularisation
 ($C=1$); the $L_1$ feature screen uses $C=0.3$. The distributional regressions
@@ -829,7 +831,12 @@ independent model's intensity head --- estimated from the few exceedances alone
 GPD support), whereas coupling lets the abundant occurrence data stabilise the
 tail and yields orders-of-magnitude better tail log-likelihood. This is
 direct evidence for the borrowing-strength mechanism: the dependent hurdle
-matters most exactly where intensity data are scarcest.
+matters most exactly where intensity data are scarcest. The implication for the
+real-data results is the important one: the coupled model is recoverable and
+beneficial \emph{when} occurrence and intensity are genuinely dependent, so its
+failure to improve on the real index (Section~\ref{sec:res-bakeoff}) reflects an
+absence of exploitable dependence in the data, not a defect of the model class
+--- reinforcing that the shortfall is one of signal, not of method.
 
 \subsection{Skill decays with horizon}\label{sec:res-skill}
 Both occurrence skill and discrimination decay toward the climatological floor as
