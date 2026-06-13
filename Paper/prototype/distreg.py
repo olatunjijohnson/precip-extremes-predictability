@@ -126,3 +126,62 @@ class ZIDistReg(nn.Module):
         zt = torch.tensor(z, dtype=torch.float32)
         Fpos = self._Fpos(zt[None, :], loc[:, None], scale)
         return (p0[:, None] + (1 - p0[:, None]) * Fpos).numpy()
+
+
+class UnifiedHurdle(nn.Module):
+    """A single hurdle predictive distribution fit by ONE joint likelihood.
+
+    F(z | x) = (1 - pi(x))                         for z <= u
+             = (1 - pi(x)) + pi(x) H(z-u; s(x), xi) for z >  u
+
+    with occurrence  pi(x)    = sigmoid(a . x + a0)
+    and  intensity   sigma(x) = softplus(b . x + b0),  xi constant (covariate-
+    free tail index, for stability on ~1-5% exceedances). H is the GPD CDF of
+    the excess. The occurrence (Bernoulli) and intensity (GPD) terms are the two
+    additive parts of ONE log-likelihood; the whole F is scored end-to-end by a
+    single threshold-weighted CRPS, which decomposes back into an occurrence and
+    an intensity contribution. (The unstructured likelihood factorises, so this
+    joint fit equals fitting the parts separately -- the components are orthogonal
+    pieces of one distribution, not two disconnected analyses; coupling them
+    requires shared latent structure, tested separately via the deep-GP hurdle.)
+    """
+    def __init__(self, d, u=1.0):
+        super().__init__()
+        self.u = u
+        self.a = nn.Linear(d, 1)        # occurrence linear predictor
+        self.b = nn.Linear(d, 1)        # log-scale linear predictor
+        self.xi_raw = nn.Parameter(torch.tensor(-1.0))
+
+    def _xi(self):
+        return 0.5 * torch.sigmoid(self.xi_raw)        # (0, 0.5), heavy positive tail
+
+    def params(self, X):
+        pi = torch.sigmoid(self.a(X).squeeze(-1)).clamp(1e-5, 1 - 1e-5)
+        sigma = F.softplus(self.b(X).squeeze(-1)) + 1e-3
+        return pi, sigma, self._xi()
+
+    def nll(self, X, O, excess):
+        pi, sigma, xi = self.params(X)
+        occ = -(O * torch.log(pi) + (1 - O) * torch.log1p(-pi))
+        e = excess.clamp_min(0.0)
+        base = torch.clamp(1 + xi * e / sigma, min=1e-6)
+        gpd_ll = -torch.log(sigma) + (-1.0 / xi - 1.0) * torch.log(base)
+        intens = torch.where(O > 0.5, -gpd_ll, torch.zeros_like(gpd_ll))
+        return (occ + intens).mean()
+
+    def fit(self, X, O, excess, epochs=400, lr=0.05, verbose=False):
+        opt = torch.optim.Adam(self.parameters(), lr=lr)
+        for e in range(epochs):
+            opt.zero_grad()
+            loss = self.nll(X, O, excess)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.parameters(), 10.0)
+            opt.step()
+            if verbose and e % max(1, epochs // 5) == 0:
+                print(f"    unified-hurdle ep{e} nll={loss.item():.4f}")
+        return self
+
+    @torch.no_grad()
+    def predict(self, X):
+        pi, sigma, xi = self.params(X)
+        return pi.numpy(), sigma.numpy(), float(xi)

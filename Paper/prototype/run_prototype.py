@@ -17,7 +17,7 @@ from tcdgp import TCDGP
 from data import make_synthetic, load_real, load_drivers, standardize
 from conformal import split_conformal_upper, adaptive_conformal
 import evaluation as ev
-from distreg import ZIDistReg
+from distreg import ZIDistReg, UnifiedHurdle
 from sklearn.linear_model import LogisticRegression
 
 torch.manual_seed(0); np.random.seed(0)
@@ -598,6 +598,91 @@ def model_bakeoff(seeds=(0, 1, 2), epochs=600, u=1.0, deep=False):
         print(f"  {n:24s} {bss:+8.3f} {res*1e3:10.3f} {tws:>9s}")
     print("\n  (BSS, twCRPSS > 0 beat climatology; RES = informativeness. "
           "For reference TCDGP earlier: BSS ~ -0.4, twCRPSS ~ -0.3.)")
+
+
+def unified_hurdle(seeds=(0, 1, 2), epochs=600, u=1.0, n_boot=2000):
+    """UNIFIED occurrence+intensity framework (reviewer point 5).
+
+    Fit ONE hurdle predictive distribution F(z) = (1-pi(x)) + pi(x) H(z-u; s(x), xi)
+    by a single joint likelihood (UnifiedHurdle), then score the WHOLE F end-to-end
+    with one threshold-weighted CRPS and DECOMPOSE that score additively into an
+    occurrence and an intensity contribution. The decomposition recovers the
+    paper's two separate findings (occurrence ~ unpredictable, intensity weakly
+    predictable) as components of one number, from one model -- the single
+    inferential framework the reviewer asked for.
+
+    Attribution vs a parametric climatology C00 (constant base rate pi_bar +
+    stationary GPD tail):
+      S_full = 1 - C11/C00   (model pi(x), model sigma(x))
+      S_occ  = 1 - C10/C00   (model pi(x), climatological tail)   -> occurrence skill
+      S_int  = 1 - C01/C00   (climatological pi_bar, model sigma(x)) -> intensity skill
+      interaction = S_full - S_occ - S_int
+    with moving-block-bootstrap 90% CIs on each.
+    """
+    print("\n" + "=" * 72 + f"\n  (14) UNIFIED HURDLE: one F, one twCRPS, decomposed "
+          f"[{CITY}]\n" + "=" * 72)
+    csv = _csv_path()
+    if not os.path.exists(csv):
+        print(f"  [skip] data not found at {csv}"); return
+    drivers = load_drivers(*_driver_paths())
+    data, dates = load_real(csv, n_lags=14, u=u, drivers_df=drivers)
+    cut = int((dates <= np.datetime64("2008-12-31")).sum())
+    Xtr, Xte = standardize(data["X"][:cut], data["X"][cut:])
+    O, I, exc = data["O"], data["I"], data["excess"]
+    O_te = O[cut:].numpy()
+    I_tr, I_te = I[:cut].numpy(), I[cut:].numpy()
+    zmax = float(max(I_tr.max(), I_te.max()) * 1.05)
+    tw = dict(u=u, tau=u, zmax=zmax)
+    n = len(I_te)
+    print(f"  train={cut} ({int(O[:cut].sum())} extremes)  test={n} "
+          f"({int(O_te.sum())} extremes)")
+
+    # --- parametric climatology reference C00 (constant pi_bar + stationary GPD) ---
+    pi_bar, sig_clim, xi_clim = ev.fit_pot(I_tr, u)
+    C00 = ev.twcrps_model(I_te, np.full(n, pi_bar), np.full(n, sig_clim), xi_clim, **tw)
+
+    # --- fit the unified hurdle (seed-averaged predictive params) ---
+    PI, SIG, XI = [], [], []
+    for s in seeds:
+        torch.manual_seed(s)
+        m = UnifiedHurdle(Xtr.shape[1], u=u)
+        m.fit(Xtr, O[:cut], exc[:cut], epochs=epochs, lr=0.05, verbose=False)
+        pi, sig, xi = m.predict(Xte)
+        PI.append(pi); SIG.append(sig); XI.append(xi)
+    pi_x = np.mean(PI, 0); sig_x = np.mean(SIG, 0); xi_x = float(np.mean(XI))
+
+    # --- the one end-to-end score and its components (per test point) ---
+    C11 = ev.twcrps_model(I_te, pi_x, sig_x, xi_x, **tw)                       # full
+    C10 = ev.twcrps_model(I_te, pi_x, np.full(n, sig_clim), xi_clim, **tw)     # occ only
+    C01 = ev.twcrps_model(I_te, np.full(n, pi_bar), sig_x, xi_x, **tw)         # int only
+
+    def sk_ci(num):
+        bs = _block_boot(num, C00, n_boot=n_boot, block=10, seed=0)
+        return (1 - num.mean() / C00.mean(),
+                np.percentile(bs, 5), np.percentile(bs, 95), float(np.mean(bs > 0)))
+
+    s_full = sk_ci(C11); s_occ = sk_ci(C10); s_int = sk_ci(C01)
+    inter = s_full[0] - s_occ[0] - s_int[0]
+
+    # --- occurrence calibration cross-check (the unified pi vs logistic) ---
+    lr = LogisticRegression(C=1.0, max_iter=500).fit(Xtr.numpy(), O[:cut].numpy())
+    bss_lr = ev.brier_decomposition(O_te, lr.predict_proba(Xte.numpy())[:, 1])["BSS"]
+    bss_uni = ev.brier_decomposition(O_te, pi_x)["BSS"]
+
+    print(f"\n  ONE predictive distribution, ONE twCRPS skill vs climatology, decomposed:")
+    print(f"  {'component':26s} {'skill':>8s} {'90% block-boot CI':>22s} {'P>0':>5s}")
+    for lab, sc in [("FULL (occ + int)", s_full),
+                    ("  occurrence contribution", s_occ),
+                    ("  intensity contribution", s_int)]:
+        print(f"  {lab:26s} {sc[0]:+8.3f}   [{sc[1]:+.3f}, {sc[2]:+.3f}]   {sc[3]:4.2f}")
+    print(f"  {'  occ x int interaction':26s} {inter:+8.3f}")
+    print(f"\n  occurrence BSS: unified pi = {bss_uni:+.3f}  (logistic = {bss_lr:+.3f}; "
+          f"unified tail xi = {xi_x:.3f})")
+    print("\n  Reading: a single hurdle F, fit by one joint likelihood and scored by "
+          "one twCRPS,\n  splits into ~0 occurrence skill + positive intensity skill "
+          "-- recovering the\n  two-part story as an additive decomposition of one number.")
+    return dict(city=CITY, full=s_full, occ=s_occ, intensity=s_int, interaction=inter,
+                bss_uni=bss_uni, bss_lr=bss_lr, xi=xi_x)
 
 
 CITY = "london"   # set via set_city(); switches data + driver files

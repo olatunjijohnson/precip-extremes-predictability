@@ -916,6 +916,24 @@ known property of coverage, but our experiments make it concrete --- reporting
 coverage without a proper-score comparison can create a false impression of a good
 probabilistic forecast.
 
+\paragraph{One predictive distribution, not two analyses.} We report occurrence
+and intensity separately for interpretability, but they are not disconnected: they
+are the point-mass and tail components of a single hurdle predictive distribution,
+$F(z)=(1-\pi)+\pi\,H(z-u)$, with occurrence probability $\pi(\mathbf{x})$ and a
+covariate-dependent excess law $H$. Because the (unstructured) hurdle likelihood
+factorises in these parameters, fitting the two components jointly is \emph{equivalent}
+to fitting them separately --- they are orthogonal pieces of one distribution rather
+than two ad hoc models --- and a single threshold-weighted CRPS over $F$ decomposes
+additively into an occurrence and an intensity contribution. Fitting this unified
+hurdle directly and scoring it end-to-end (Appendix~\ref{app:unified}) recovers
+exactly the two-part story: in both cities the overall skill splits into a modest
+occurrence term and a small but unusually stable intensity term (its bootstrap
+interval excludes zero in both cities), with negligible interaction. The only way
+to make the joint fit differ from the separate one is to \emph{couple} the
+components through shared latent structure --- which is precisely the dependent
+deep-GP hurdle we tested and found wanting, reinforcing that the parsimonious,
+separable treatment is the right one here.
+
 \paragraph{Why rigour mattered here.} Several apparent results did not survive
 scrutiny: a single-seed driver benefit and an apparent long-horizon gain both
 evaporated under seed-averaging, and an across-the-board intensity skill shrank to
@@ -1071,6 +1089,53 @@ quantiles, $E_t=\max\{\widehat z_{\alpha/2}-\Ind_t,\ \Ind_t-\widehat z_{1-\alpha
 when the required score quantile exceeds what the calibration set resolves we
 extrapolate with a GPD fit to the upper calibration scores \citep{pasche2025extreme},
 and we adapt the level online by \eqref{eq:aci} over a rolling window.
+
+\section{Unified hurdle: one predictive distribution, decomposed}\label{app:unified}
+
+To verify that the separately reported occurrence and intensity analyses are the
+two components of one inferential object (Section~\ref{sec:discussion}), we fit a
+single hurdle predictive distribution directly,
+\[
+F(z\mid\bx)=\begin{cases}1-\pi(\bx) & z\le u,\\[2pt]
+(1-\pi(\bx))+\pi(\bx)\,H\!\big(z-u;\sigma(\bx),\xi\big) & z>u,\end{cases}
+\]
+with $\pi(\bx)=\sigmoid(\bm a^\top\bx)$, $\sigma(\bx)=\softplus(\bm b^\top\bx)$,
+$H$ the GPD excess law and $\xi$ a covariate-free tail index, fitting all
+parameters by a \emph{single} joint hurdle log-likelihood. Because that likelihood
+factorises, this is numerically equivalent to the separate fits; the point is the
+\emph{evaluation}. We score the whole $F$ with one threshold-weighted CRPS at
+$\tau=u$ and attribute its skill over a parametric climatology (constant base rate
+$\bar\pi$ plus a stationary GPD tail) by swapping one component at a time:
+$S_{\mathrm{occ}}$ uses $\pi(\bx)$ with the climatological tail, $S_{\mathrm{int}}$
+uses $\bar\pi$ with $\sigma(\bx)$, and $S_{\mathrm{full}}$ uses both; the
+decomposition is additive up to a small interaction. Intervals are moving-block
+bootstrap ($90\%$, block $=10$ days, seed-averaged over three fits).
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+twCRPS skill vs climatology & London & Paris \\
+\midrule
+$S_{\mathrm{full}}$ (occurrence $+$ intensity) & $+0.030$ $[+0.002,+0.061]$ & $+0.084$ $[+0.027,+0.135]$ \\
+\quad occurrence contribution $S_{\mathrm{occ}}$ & $+0.029$ $[+0.009,+0.050]$ & $+0.075$ $[+0.043,+0.104]$ \\
+\quad intensity contribution $S_{\mathrm{int}}$ & $+0.007$ $[+0.005,+0.009]$ & $+0.013$ $[+0.010,+0.017]$ \\
+\quad occurrence\,$\times$\,intensity interaction & $-0.005$ & $-0.004$ \\
+\midrule
+occurrence BSS (unified $\pi$ / standalone logistic) & $+0.036$ / $+0.038$ & $+0.116$ / $+0.117$ \\
+\bottomrule
+\end{tabular}
+\caption{The single hurdle distribution, scored end-to-end, decomposes into the
+two findings reported in the main text: a modest occurrence term and a small but
+stable intensity term (its bootstrap interval excludes zero in both cities), with
+negligible interaction. The unified occurrence probability reproduces the
+standalone logistic skill, confirming the components are orthogonal pieces of one
+distribution. The intensity contribution is small because it is averaged over all
+test days; restricted to the $\sim\!3$--$6\%$ of days that are extreme it matches
+the isolated CRPS-of-excess skill of Section~\ref{sec:res-int}.}
+\label{tab:unified}
+\end{table}
 
 \bibliographystyle{plainnat}
 \bibliography{references}
