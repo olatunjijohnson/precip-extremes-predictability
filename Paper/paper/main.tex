@@ -2,7 +2,7 @@
 
 % ============================================================================
 %  How Predictable Are Rare Precipitation Extremes?
-%  A Calibration-Aware Assessment for London
+%  A Calibration-Aware Assessment for London and Paris
 %
 %  Predictability assessment + evaluation methodology. Results in
 %  ../04_prototype_results.md; figures built by figures/make_figs.py and
@@ -102,8 +102,9 @@ rules; calibration; precipitation extremes; convective instability.
 Extreme precipitation is among the most damaging natural hazards facing
 temperate cities. Short, intense rainfall episodes trigger surface-water and
 river flooding, disrupt transport, overwhelm drainage, and impose large and
-unevenly distributed economic and social costs. In London such events occur on
-only a small fraction of days, yet a single episode can cause disproportionate
+unevenly distributed economic and social costs. In cities such as London and
+Paris such events occur on only a small fraction of days, yet a single episode can
+cause disproportionate
 harm, and both observational records and climate projections indicate that the
 frequency and intensity of heavy rainfall are increasing \citep{ipcc2021}.
 Skilful and, above
@@ -178,8 +179,8 @@ hurdle with conformal calibration.
   events carries weak but robust predictability tied to antecedent \textbf{convective
   instability} (CAPE/CIN), with a CRPS skill over climatology whose moving-block
   bootstrap interval excludes zero across four independent train/test splits in
-  each city --- and is stronger in the more convective Paris, indicating the
-  signal is not location-specific.
+  each city --- replicated across both, indicating the signal is not
+  location-specific.
   \item A \textbf{cautionary methodological finding}: across the bake-off,
   \emph{simpler calibrated models (logistic regression, gradient-boosted trees)
   outperform the elaborate deep-GP--EVT model}, the choice of response
@@ -383,7 +384,7 @@ Peak season                     & \multicolumn{2}{c}{July--August}\\
 \centering
 \includegraphics[width=\linewidth]{figures/fig_data}
 \caption{The London $95$th-percentile precipitation-extreme index, 1989--2018
-(Paris is qualitatively similar).
+(Paris is qualitatively similar; see Supplementary Figure~S1).
 \textbf{(a)} Daily series with extreme days ($\Ind>1$) marked and the train/test
 split; \textbf{(b)} the distribution is zero-inflated ($\sim$a quarter of days
 are exactly zero) and strongly right-skewed (log count); \textbf{(c)} extremes
@@ -745,7 +746,8 @@ good probabilistic forecast --- a cautionary point in its own right.
 $h{=}1$). A plain logistic regression tracks the diagonal (calibrated) and spreads
 its predictions (informative); the deep Gaussian-process extreme-value model is
 overconfident and nearly flat, despite its conformal intervals attaining nominal
-coverage. Climatology is a single point at the base rate.}
+coverage. Climatology is a single point at the base rate. The Paris counterpart is
+Supplementary Figure~S2.}
 \label{fig:reliability}
 \end{figure}
 
@@ -774,15 +776,19 @@ $\sim2$ expected), led by convective inhibition and CAPE in both. To test whethe
 this signal generalises out of sample, we fit quantile regressions of the excess
 on held-out extreme days (regularisation chosen by cross-validation on the
 training set only) and score them by the CRPS of the excess against the
-climatological excess distribution. The CRPS skill is small but its moving-block
-bootstrap interval \emph{excludes zero} in each city (London $+0.014$,
-$[+0.009,+0.019]$; Paris $+0.036$, $[+0.005,+0.074]$), and it remains positive
-across four independent expanding-window splits per city (Table~\ref{tab:intensity},
-Figure~\ref{fig:intensity}), with every interval excluding zero. The signal is
-concentrated in the upper tail (the largest events) and is carried by antecedent
-convective instability (CAPE/CIN); median magnitude is indistinguishable from
-climatology. As with occurrence, intensity predictability is stronger in the more
-convective Paris.
+climatological excess distribution. Computed over a fine quantile grid on the
+primary split, the CRPS skill is small but its moving-block bootstrap interval
+\emph{excludes zero} in each city (London $+0.014$, $[+0.009,+0.019]$; Paris
+$+0.036$, $[+0.005,+0.074]$). As a robustness check we recompute it over a coarser
+quantile grid across four independent expanding-window splits per city: the skill
+stays positive throughout --- every interval excluding zero, with primary-split
+(2009--2018) values of $+0.035$ in each city (Table~\ref{tab:intensity},
+Figure~\ref{fig:intensity}). The signal is concentrated in the upper tail (the
+largest events) and is carried by antecedent convective instability (CAPE/CIN);
+median magnitude is indistinguishable from climatology. The Paris point estimates
+run somewhat higher than London's, but their confidence intervals overlap, so we
+read the intensity signal as robustly \emph{replicated} across the two cities
+rather than decisively stronger in either.
 
 \begin{figure}[t]
 \centering
@@ -790,7 +796,8 @@ convective Paris.
 \caption{Hold-out intensity predictability for both cities: CRPS-of-excess skill
 over climatology, with $90\%$ moving-block bootstrap intervals, across four
 forward-only expanding-window train/test splits. The skill is small but its
-interval excludes zero in every split and city, and is larger in Paris.}
+interval excludes zero in every split and city; Paris point estimates run somewhat
+higher than London's, though the intervals overlap.}
 \label{fig:intensity}
 \end{figure}
 
@@ -798,8 +805,8 @@ interval excludes zero in every split and city, and is larger in Paris.}
 \centering\small
 \caption{Hold-out intensity predictability in both cities: CRPS-of-excess skill
 over climatology across forward-only expanding-window splits, with $90\%$
-moving-block bootstrap intervals. Every interval excludes zero; the effect is
-larger in Paris.}
+moving-block bootstrap intervals. Every interval excludes zero; Paris point
+estimates run somewhat higher than London's, though the intervals overlap.}
 \label{tab:intensity}
 \begin{tabular}{lcccc}
 \toprule
@@ -846,7 +853,8 @@ guaranteed by construction, is flat across horizons (Figure~\ref{fig:horizon}b).
 Seed-averaged sweeps found no statistically robust occurrence-discrimination gain
 from atmospheric drivers at any single horizon --- a reminder that the
 predictability documented above is weak and easily masked by noise unless
-assessed with seed-averaging and proper scores rather than single runs.
+assessed with seed-averaging and proper scores rather than single runs. The same
+decay and flat coverage hold for Paris (Supplementary Figure~S3).
 
 \begin{figure}[t]
 \centering
@@ -856,7 +864,8 @@ assessed with seed-averaging and proper scores rather than single runs.
 forecast horizon grows; driver gains are marginal at all horizons (the apparent
 ERA5 edge at $h=28$ does not survive a higher-seed check; see text).
 \textbf{(b)} Conformal coverage stays at the nominal $0.90$ across all horizons
-and predictor sets. Error bars / markers are means over three seeds.}
+and predictor sets. Error bars / markers are means over three seeds. The Paris
+counterpart is Supplementary Figure~S3.}
 \label{fig:horizon}
 \end{figure}
 
@@ -872,9 +881,9 @@ predictable from antecedent convective instability, with a CRPS skill over
 climatology that excludes zero across four independent splits
 (Section~\ref{sec:res-int}). The dependent-hurdle mechanism is separately
 validated on synthetic data (Section~\ref{sec:res-synth}). Every one of these
-conclusions holds in \emph{both} London and Paris, and is quantitatively stronger
-in the more convective Paris --- evidence that they reflect the meteorology of
-precipitation extremes rather than the idiosyncrasies of one city.
+conclusions holds in \emph{both} London and Paris, and is generally more
+pronounced in the more convective Paris --- evidence that they reflect the
+meteorology of precipitation extremes rather than the idiosyncrasies of one city.
 
 % ===========================================================================
 \section{Discussion}\label{sec:discussion}
@@ -974,8 +983,9 @@ contrasting cities, is a qualified, quantified ``a little'': occurrence and the
 magnitude of the largest events are weakly but genuinely predictable from
 antecedent convective instability, while simpler calibrated models suffice and
 conformal coverage is no substitute for a proper-score comparison. That every
-finding holds --- and strengthens --- in the more convective Paris is itself
-evidence that these are properties of precipitation extremes, not of one city.
+finding holds in --- and is generally more pronounced in --- the more convective
+Paris is itself evidence that these are properties of precipitation extremes, not
+of one city.
 Natural extensions are the directions in which more signal, and a genuine role for
 structured Gaussian-process models, are most plausible: more cities to map the
 predictability across climates, \emph{spatial} modelling across the grid of cells,
