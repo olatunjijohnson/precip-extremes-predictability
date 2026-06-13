@@ -194,7 +194,7 @@ def calibration_eval(seeds=(0, 1, 2), epochs=250, u=1.0, save_npz="reliability.n
         bdl = ev.brier_decomposition(O_te, p_lr)
         rows.append((f"logistic [{name}]", bdl["BS"], bdl["BSS"], bdl["REL"],
                      bdl["RES"], float("nan")))
-        if name == "+ERA5 (+teleconn)":
+        if name.startswith("+ERA5"):
             rel_curves["logistic+ERA5"] = ev.reliability_curve(O_te, p_lr)
         # TCDGP, seed-averaged
         agg = {k: [] for k in ("BS", "BSS", "REL", "RES", "twss")}
@@ -214,7 +214,7 @@ def calibration_eval(seeds=(0, 1, 2), epochs=250, u=1.0, save_npz="reliability.n
             last_pi = pi
         rows.append((f"TCDGP [{name}]", np.mean(agg["BS"]), np.mean(agg["BSS"]),
                      np.mean(agg["REL"]), np.mean(agg["RES"]), np.mean(agg["twss"])))
-        if name == "+ERA5 (+teleconn)":
+        if name.startswith("+ERA5"):
             rel_curves["TCDGP+ERA5"] = ev.reliability_curve(O_te, last_pi)
 
     # --- report ---
