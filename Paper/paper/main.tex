@@ -66,30 +66,26 @@ A Calibration-Aware Assessment for London and Paris}
 \begin{abstract}
 \noindent
 How predictable are rare precipitation extremes, and how should that
-predictability be measured? We address both questions with thirty years
-(1989--2018) of a standardised daily precipitation-extreme index for two
-climatically contrasting cities, London (maritime) and Paris (more continental),
-augmented with strictly antecedent ERA5 atmospheric drivers. Methodologically,
-we argue that rare-event forecasts must be judged by \emph{calibration-aware
-proper scores} relative to climatology --- not by discrimination metrics or by
-conformal coverage, which on its own can give a misleading impression of
-forecast quality --- and we assemble an
-evaluation protocol (Brier reliability/resolution decomposition, threshold- and
-quantile-weighted CRPS, skill scores, bootstrap confidence intervals, and
-multi-split robustness) that guards against the single-seed and
-quantile-selection pitfalls that inflate apparent skill. Empirically, across a
-bake-off of models from logistic regression and gradient-boosted trees to a deep
-Gaussian-process extreme-value hurdle, we find --- consistently in both cities ---
-that (i) \textbf{simple calibrated models outperform the elaborate ones}, and the
-choice of response distribution dominates model class; (ii) \textbf{occurrence} of
-an extreme is weakly but genuinely predictable from antecedent state (led by
-convective-instability and circulation indices); and (iii) \textbf{the magnitude
-of the largest events} carries weak but robust predictability tied to antecedent
-convective instability (CAPE/CIN), with a continuous-ranked-probability skill over
-climatology whose moving-block bootstrap interval excludes zero across four
-independent train/test splits in each city. The effects are small but
-statistically robust, physically plausible, and replicated across both London
-and Paris, suggesting that they are unlikely to be a location-specific artefact.
+predictability be measured? We address both questions using thirty years
+(1989--2018) of a standardised precipitation-extreme index for London
+(maritime) and Paris (more continental), with strictly antecedent ERA5
+drivers. We argue rare-event forecasts must be judged by
+\emph{calibration-aware proper scores} against climatology --- not
+discrimination metrics or conformal coverage, which alone can mislead --- and
+assemble a protocol (Brier decomposition, threshold-weighted CRPS skill,
+bootstrap intervals, multi-split checks) guarding against the single-seed and
+quantile-selection pitfalls that inflate apparent skill. Across a bake-off from
+logistic regression to a deep Gaussian-process extreme-value hurdle, we find
+--- consistently in both cities --- that (i) \textbf{simple calibrated models
+outperform the elaborate ones}, and the response distribution matters more than
+model class; (ii) \textbf{occurrence} is weakly but genuinely predictable from
+antecedent convective instability and circulation; and (iii) \textbf{the
+magnitude of the largest events} is weakly but robustly predictable from
+convective instability (CAPE/CIN), with a CRPS skill over climatology excluding
+zero across four independent splits per city. The effects are small,
+statistically robust, and physically plausible; replication across two cities
+that share the same reanalysis source offers modest, not decisive, evidence
+against a location-specific artefact.
 \end{abstract}
 
 \noindent\textbf{Keywords:} predictability; extreme-value theory; proper scoring
@@ -179,8 +175,9 @@ hurdle with conformal calibration.
   events carries weak but robust predictability tied to antecedent \textbf{convective
   instability} (CAPE/CIN), with a CRPS skill over climatology whose moving-block
   bootstrap interval excludes zero across four independent train/test splits in
-  each city --- replicated across both, indicating the signal is not
-  location-specific.
+  each city --- and is stronger in the more convective Paris, consistent with a
+  meteorological rather than a purely local origin (though two cities in one
+  climate zone offer only modest evidence on geographic generality).
   \item A \textbf{cautionary methodological finding}: across the bake-off,
   \emph{simpler calibrated models (logistic regression, gradient-boosted trees)
   outperform the elaborate deep-GP--EVT model}, the choice of response
@@ -415,6 +412,9 @@ three groups.
   Arctic Oscillation, and an El Ni\~no--Southern Oscillation index, capturing
   large-scale circulation states relevant at longer horizons.
 \end{enumerate}
+In total $d=49$ predictors enter the full model: $20$ index-history features
+(lags, rolling summaries, and seasonality harmonics), $26$ ERA5 circulation,
+moisture, and convective-instability fields, and $3$ teleconnection indices.
 In the analysis the drivers are introduced \emph{cumulatively} --- index history;
 $+$\,teleconnections; $+$\,ERA5 circulation and moisture; $+$\,convective
 instability --- so that each increment isolates a class of predictors. All
@@ -466,7 +466,15 @@ multi-split robustness --- which is itself a contribution.
 % --------------------------------------------------------------------------
 Let $\Ind_t \ge 0$ denote the daily standardised precipitation index on day
 $t$, and let $u>0$ be a fixed exceedance threshold (we take $u=1$, the value at
-which the index marks an extreme, and report sensitivity to $u$). A day is
+which the index marks an extreme, and report sensitivity to $u$ in
+Section~\ref{sec:res-bakeoff}). Because $\Ind=P/P_q$ is itself standardised
+against the training-period $q$th percentile (Section~\ref{sec:data-index}),
+$u$ and $q$ are linked but distinct: varying $q$ redefines the standardisation
+(a different, rarer event, as for the $99$th-percentile analysis of
+Section~\ref{sec:data-split}), whereas varying $u$ at fixed $q$ asks how much
+of the standardisation ratio itself must be exceeded to count as extreme ---
+e.g.\ $u=1.25$ requires exceeding $125\%$ of the $q$th-percentile level. A day
+is
 \emph{extreme} when $\Ind_t > u$. Write the occurrence indicator and the excess
 as
 \begin{equation}
@@ -567,15 +575,27 @@ $\operatorname{Cov}(g_a(\bx),g_b(\bx'))=B_{ab}\,k_\theta(\bx,\bx')$, whose
 off-diagonal yields an interpretable borrowing-strength correlation
 $\rho=B_{\pi\sigma}/\sqrt{B_{\pi\pi}B_{\sigma\sigma}}$ ($\rho=0$ recovers the
 independent hurdle). Because the excess is observed only on extreme days $\rho$
-is weakly identified, so we first confirm on synthetic data that the mechanism
-is recoverable and beneficial \emph{when the dependence genuinely exists}
-(Section~\ref{sec:res-synth}); this isolates whether any real-data shortfall is a
-failure of the model or an absence of signal. This construction is related to
-correlated two-part models in biostatistics and econometrics
+is weakly identified, so we first study on synthetic data when the mechanism
+is recoverable and beneficial (Section~\ref{sec:res-synth}); as we will see, it
+is recoverable and clearly helpful \emph{when the dependence is strong}, but the
+estimator becomes biased and noisy away from that regime, which bounds how much a
+real-data outcome can tell us about the underlying dependence. This construction
+is related to correlated two-part models in biostatistics and econometrics
 \citep{olsen2001twopart,heckman1979selection}.
 
 \paragraph{Implementation.} Logistic regression uses $L_2$ regularisation
-($C=1$); the $L_1$ feature screen uses $C=0.3$. The distributional regressions
+($C=1$); the $L_1$ feature screen uses $C=0.3$; XGBoost uses $300$ trees, depth
+$4$, learning rate $0.05$. These are standard off-the-shelf settings, fixed
+\emph{a priori} and \textbf{not tuned by cross-validation}, unlike the deep-GP,
+which receives a dedicated sensitivity sweep over inducing points and kernel
+depth (Section~\ref{sec:res-bakeoff}). We flag this asymmetry explicitly: it
+means the simple models are not given an implicit regularisation advantage from
+tuning, but a reviewer could still ask whether lightly tuning $C$ would close
+part of the gap. We consider this unlikely to overturn the qualitative ordering
+--- $C=1$ is itself a weak, unremarkable amount of regularisation, and the
+deep-GP's shortfall (Section~\ref{sec:res-bakeoff}) is large and attributable
+to model depth rather than to a regularisation mismatch on the simpler models.
+The distributional regressions
 place linear predictors on the zero-inflation probability and the positive-part
 parameters and are fitted by maximum likelihood. The deep-GP--EVT hurdle uses a
 deep-kernel sparse variational GP ($M=64$ inducing points, a two-hidden-layer
@@ -590,17 +610,23 @@ misspecification its quantiles need not be calibrated. As one calibration option
 we assess, we wrap a model in a conformal layer \citep{vovk2005,romano2019cqr}
 that supplies distribution-free coverage, with two adaptations for our setting.
 \emph{Tail targeting:} at the very high confidence levels relevant to extremes the
-required nonconformity quantile can exceed what a finite calibration set resolves,
-so we extrapolate the upper tail of the calibration scores with a GPD fit,
-following the extreme-conformal construction of \citet{pasche2025extreme}.
+required nonconformity quantile can exceed what a finite calibration set resolves
+(the empirical quantile saturates); when this happens we extrapolate the upper
+tail with a GPD fitted to the top $20\%$ of calibration scores (a
+data-adaptive, not fixed-probability, exceedance threshold), following the
+extreme-conformal construction of \citet{pasche2025extreme}.
 \emph{Temporal adaptation:} because daily extremes are not exchangeable, we use
 adaptive conformal inference \citep{gibbs2021adaptive}, updating the level online,
 \begin{equation}\label{eq:aci}
 \alpha_{t+1} = \alpha_t + \gamma\big(\alpha-\mathrm{err}_t\big),\qquad
 \mathrm{err}_t=\mathbf{1}\{\Ind_t\notin C_t\},
 \end{equation}
-with $C_t$ the issued interval and $\gamma>0$ a step size, over a rolling
-walk-forward window; under \eqref{eq:aci} with bounded scores the long-run
+with $C_t$ the issued interval and step size $\gamma=0.02$, over an
+\emph{expanding} calibration pool: starting from the held-out calibration set,
+each test-day nonconformity score is appended to the pool after it is scored,
+so the reference distribution for $C_t$ grows through the test period rather
+than sliding over a fixed-width window. Under \eqref{eq:aci} with bounded
+scores the long-run
 coverage converges to $1-\alpha$ irrespective of the data-generating process
 \citep{gibbs2021adaptive}. We stress that this guarantee concerns \emph{coverage},
 not predictive quality: as Section~\ref{sec:res-cal} shows, a conformally
@@ -651,7 +677,14 @@ reference (the empirical training distribution). Every estimate carries a
 \emph{moving-block} bootstrap confidence interval ($1{,}000$--$2{,}000$ resamples,
 block of ten extreme days, to respect short-range temporal dependence), and the
 intensity result is repeated across the four forward-only, expanding-window splits
-of Section~\ref{sec:data-split} \emph{and across the two cities}. Per-feature
+of Section~\ref{sec:data-split} \emph{and across the two cities}. The block length
+is not tightly identified by the short-range autocorrelation of
+Figure~\ref{fig:data}d alone, so, because the smallest split has only $96$ test
+extremes in London (roughly ten blocks of ten), we checked the interval against
+block lengths of $5$ and $20$ at that split: the $90\%$ CI moves by at most
+$\pm0.003$ around the reported $[+0.006,+0.059]$ in London and
+$[+0.019,+0.073]$ in Paris (Table~\ref{tab:intensity}), so the block-$10$ choice
+is not doing load-bearing work in the smallest-sample case. Per-feature
 significance is controlled for multiplicity by the Benjamini--Hochberg
 false-discovery rate, and feature importance is quantified by stability selection
 (selection frequency under subsampling). The deep-GP model is probed by a
@@ -726,6 +759,19 @@ depth, not the Gaussian-process framework, that fails on this low-signal problem
 The elaborate model is thus dominated not because GPs are unsuitable but because
 the extra flexibility cannot be supported by so few informative events.
 
+\paragraph{Sensitivity to the exceedance threshold $u$.} Re-fitting the winning
+occurrence model (logistic $+$ERA5) at $u\in\{0.75,1.00,1.25\}$ --- i.e.\ marking
+a day extreme at $75\%$, $100\%$, and $125\%$ of the $q$th-percentile level ---
+leaves the qualitative finding unchanged in both cities: the Brier skill score
+stays clearly positive and of comparable magnitude at every $u$ (London
+$+0.055$, $+0.038$, $+0.028$; Paris $+0.103$, $+0.117$, $+0.101$). In London
+skill rises modestly as $u$ falls, as expected --- a lower threshold admits more
+extreme days and so more data to fit --- while Paris peaks at $u=1$; neither city
+shows the skill collapsing or changing sign near the working threshold. This is
+reassuring on two counts: predictability is not an artefact of the particular
+threshold $u=1$, and it is not a knife-edge effect that appears at one value and
+vanishes at neighbouring ones.
+
 \subsection{Conformal coverage does not imply forecast quality}\label{sec:res-cal}
 The tail-conformal layer attains its nominal $0.90$ coverage on the real series
 across every predictor set and horizon (Figure~\ref{fig:horizon}b). But this is
@@ -759,9 +805,11 @@ resolution. An $L_1$-regularised logistic identifies physically sensible
 antecedent predictors --- led by the \textbf{K-index} of convective instability,
 the $500$\,hPa geopotential, integrated vapour transport, low-level humidity, and
 season --- and stability selection confirms their robustness: the K-index and the
-most recent index lag are selected in essentially every training subsample.
-Skill nonetheless decays toward the prevalence floor as the forecast horizon grows
-(Figure~\ref{fig:horizon}a), consistent with the limited day-scale persistence of
+most recent index lag are selected in essentially every training subsample (full
+ranking, both cities: Supplementary Table~S2). Skill nonetheless decays toward
+the prevalence floor as the forecast horizon grows (Figure~\ref{fig:horizon}a;
+numerical BSS by horizon, both cities: Supplementary Table~S3), consistent with
+the limited day-scale persistence of
 these extremes. At the rarer $99$th-percentile threshold (London), where the
 scarce data support only an occurrence analysis, the qualitative picture is
 unchanged (Supplementary Material).
@@ -838,12 +886,46 @@ independent model's intensity head --- estimated from the few exceedances alone
 GPD support), whereas coupling lets the abundant occurrence data stabilise the
 tail and yields orders-of-magnitude better tail log-likelihood. This is
 direct evidence for the borrowing-strength mechanism: the dependent hurdle
-matters most exactly where intensity data are scarcest. The implication for the
-real-data results is the important one: the coupled model is recoverable and
-beneficial \emph{when} occurrence and intensity are genuinely dependent, so its
-failure to improve on the real index (Section~\ref{sec:res-bakeoff}) reflects an
-absence of exploitable dependence in the data, not a defect of the model class
---- reinforcing that the shortfall is one of signal, not of method.
+matters most exactly where intensity data are scarcest.
+
+\paragraph{Misspecification.} Because the validation above fixes a single
+$\rho$, we repeat it (three seeds each) at $\rho_{\mathrm{true}}\in\{0.3,0.7,0.9\}$
+with $\xi=0.20$ held fixed. Recovery is reliable only near the validated
+setting: at $\rho_{\mathrm{true}}=0.7$ the coupled model recovers
+$\widehat\rho=0.81\pm0.07$ (matching the single-seed estimate above), but at
+$\rho_{\mathrm{true}}=0.3$ and $0.9$ the estimate is both biased and far
+noisier ($\widehat\rho=0.61\pm0.46$ and $0.60\pm0.17$ respectively) --- which is
+consistent with, and now direct evidence for, the paper's own diagnosis that
+$\rho$ is weakly identified from so few exceedances (Section~\ref{sec:models}).
+The borrowing-strength benefit is correspondingly uneven across seeds: large
+tail-log-likelihood gains appear in most but not all fits, and shrink to
+near-zero at $\rho_{\mathrm{true}}=0.9$, where the independent model no longer
+reliably collapses. The qualitative conclusion --- coupling never does worse,
+and in most seeds does much better, than the independent hurdle --- holds
+throughout the sweep, but the \emph{size} of the benefit, like $\widehat\rho$
+itself, should be read as a favourable single-setting illustration rather than
+a precisely quantified effect.
+
+\paragraph{What does the real data say?} Fitting the coupled model on the real
+series (five seeds) gives $\widehat\rho=+0.25\pm0.14$ in London and
+$\widehat\rho=+0.64\pm0.12$ in Paris. These cannot be read directly as the
+strength of real occurrence--intensity dependence, for the reason the
+misspecification sweep just exposed: in this data regime the estimator is biased
+toward mid-range positive values, returning $\widehat\rho\approx0.6$ even when the
+true correlation is only $0.3$. A real-data $\widehat\rho$ near $0.6$ is therefore
+consistent with anything from weak to moderate dependence, and we do not use it to
+claim either presence or absence of exploitable coupling. Crucially, the
+substantive conclusion does not depend on estimating $\rho$: the coupled
+deep-GP--EVT hurdle fails to beat climatology in both cities
+(Table~\ref{tab:bakeoff}), and the depth sensitivity of
+Section~\ref{sec:res-bakeoff} localises that failure to the deep kernel's excess
+flexibility --- a plain GP is competitive --- rather than to the coupling
+mechanism. The shortfall is thus one of model capacity given so few informative
+events; whether a lower-capacity coupled model could convert any real dependence
+into skill is a question this experiment leaves open. We deliberately stop short
+of the cleaner-sounding claim that the real index simply lacks exploitable
+dependence, because the misspecification result shows we cannot measure that
+dependence reliably enough to assert its absence.
 
 \subsection{Skill decays with horizon}\label{sec:res-skill}
 Both occurrence skill and discrimination decay toward the climatological floor as
@@ -942,9 +1024,13 @@ exactly the two-part story: in both cities the overall skill splits into a modes
 occurrence term and a small but unusually stable intensity term (its bootstrap
 interval excludes zero in both cities), with negligible interaction. The only way
 to make the joint fit differ from the separate one is to \emph{couple} the
-components through shared latent structure --- which is precisely the dependent
-deep-GP hurdle we tested and found wanting, reinforcing that the parsimonious,
-separable treatment is the right one here.
+components through shared latent structure --- precisely the dependent deep-GP
+hurdle we tested. It did not improve on the separable treatment here; but, as
+Section~\ref{sec:res-synth} makes clear, that outcome reflects the limited
+capacity supportable from so few exceedances (and an occurrence--intensity
+correlation we cannot reliably estimate), not a demonstration that no coupling
+could ever help. The separable treatment is thus the pragmatic, well-identified
+choice at this data volume, rather than a refutation of dependence in principle.
 
 \paragraph{Why rigour mattered here.} Several apparent results did not survive
 scrutiny: a single-seed driver benefit and an apparent long-horizon gain both
@@ -957,10 +1043,29 @@ the difference between a finding and an artefact.
 
 \paragraph{Limitations.} The study covers two cities --- a step beyond a single
 site, but still a limited sample of European urban climates, so we frame the
-results as a careful two-city assessment rather than a continent-wide claim. It
+results as a careful two-city assessment rather than a continent-wide claim.
+London and Paris also share a climate zone, a downscaled reanalysis product
+(ERA5-2km), and a data provider (Copernicus), so they are not fully independent
+replicates: common reanalysis biases could in principle inflate both cities'
+apparent skill together. Replication in a climatically distinct setting
+(Mediterranean or continental-interior) would be needed to rule this out, and we
+flag it as the most direct next step rather than a claim we can settle here. It
 uses a perfect-prognosis design (antecedent reanalysis fields, not operational
 forecasts), and the intensity analysis conditions on observed exceedances, so it
-isolates predictability rather than delivering an end-to-end warning. Finally, the
+isolates predictability rather than delivering an end-to-end warning. The
+extreme-day definition itself has two, distinct knobs --- the standardisation
+percentile $q$ (Section~\ref{sec:data-index}) and the exceedance threshold $u$
+applied to the standardised index (Section~\ref{sec:setup}) --- and we vary each
+separately (the $99$th-percentile analysis in the Supplementary Material, and
+the $u$-sensitivity check of Section~\ref{sec:res-bakeoff}) rather than
+conflating them. We also treat the 1989--2018 climatological reference as
+stationary; given that climate projections indicate a rising trend in extreme
+rainfall over this period \citep{ipcc2021}, a non-stationary reference (e.g.\ a
+smoothly time-varying baseline rate) could in principle sharpen or shift the
+skill scores reported here, and we did not pursue it because the sample is
+already short relative to the rarity of the events, making an additional
+non-stationary component hard to fit reliably; we flag it as a natural extension
+rather than a design choice we defend as final. Finally, the
 index is itself an ERA5-derived precipitation product, which raises a circularity
 concern. We address it in two ways: no precipitation field of any kind enters the
 predictors, and every driver is strictly lagged, so the predictors are antecedent
@@ -1011,8 +1116,9 @@ deep-GP--EVT hurdle), the full evaluation protocol (proper scores, the hold-out
 intensity test, moving-block bootstrap and multi-split robustness), the
 data-retrieval and feature-processing scripts, and the scripts that produce every
 figure and table --- together with the processed daily feature tables for both
-cities, are available in a repository made public on acceptance
-(\textsc{[repository url / archived doi to be inserted]}).
+cities, are available at
+\url{https://github.com/olatunjijohnson/precip-extremes-predictability}
+(made public on acceptance, and to be archived with a citable DOI at that time).
 
 % ===========================================================================
 \appendix
@@ -1100,8 +1206,10 @@ data (Section~\ref{sec:res-synth}).
 conformalised-quantile-regression nonconformity score on the model's predictive
 quantiles, $E_t=\max\{\widehat z_{\alpha/2}-\Ind_t,\ \Ind_t-\widehat z_{1-\alpha/2}\}$;
 when the required score quantile exceeds what the calibration set resolves we
-extrapolate with a GPD fit to the upper calibration scores \citep{pasche2025extreme},
-and we adapt the level online by \eqref{eq:aci} over a rolling window.
+extrapolate with a GPD fitted to the top $20\%$ of the upper calibration scores
+\citep{pasche2025extreme}, and we adapt the level online by \eqref{eq:aci}
+(step size $\gamma=0.02$) over an expanding calibration pool that accumulates
+test-day scores as the walk-forward evaluation proceeds.
 
 \section{Unified hurdle: one predictive distribution, decomposed}\label{app:unified}
 

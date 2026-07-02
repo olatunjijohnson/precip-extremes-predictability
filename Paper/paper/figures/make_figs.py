@@ -49,7 +49,7 @@ for d, off, col, lab in [(lon, +0.12, "#444444", "London"),
 ax.axvline(0, color="crimson", ls="--", lw=1.0)
 ax.set_yticks(base); ax.set_yticklabels(periods)
 ax.set_xlim(-0.01, 0.085)
-ax.set_xlabel("CRPS-of-excess skill over climatology")
+ax.set_xlabel("CRPS skill (excess) vs. climatology")
 ax.set_ylabel("test period")
 ax.set_title("Hold-out intensity predictability (90\\% moving-block bootstrap CI)")
 ax.legend(fontsize=8, frameon=False, loc="lower right")

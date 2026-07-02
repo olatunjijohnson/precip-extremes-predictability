@@ -133,4 +133,87 @@ predictor sets. Markers are means over three seeds.}
 \label{fig:horizon-paris}
 \end{figure}
 
+\section{Feature importance and horizon-wise occurrence skill}
+\label{sec:supp-features}
+
+The main paper reports, in prose, that antecedent convective-instability and
+circulation indices dominate the occurrence feature screen
+(Section~5.3), and that occurrence skill decays with forecast horizon
+(Section~5.6, Figure~4). We give both results here as tables, to make them
+directly reproducible rather than only visually apparent.
+
+Table~\ref{tab:supp-stability} shows the $15$ most frequently selected
+features (of $d=49$; Section~3.3) under $L_1$-logistic stability selection
+($200$ subsamples of $60\%$ of the training data, selection frequency = share
+of subsamples in which a feature's coefficient is non-zero). The K-index of
+convective instability (\texttt{kx\_mean}) and the most recent index lag
+(\texttt{lag\_1}) are selected in essentially every subsample in both cities,
+consistent with the main text; day-of-year seasonality, integrated
+moisture/vapour-transport fields, the east--west mean-sea-level-pressure
+gradient, and the NAO index also recur near the top of both lists.
+
+\begin{table}[h]
+\centering\small
+\caption{Occurrence feature-importance: $L_1$-logistic stability-selection
+frequency (top $15$ of $d=49$ features), $95$th percentile, $h=1$. Lags are
+days; \texttt{exc30} is the $30$-day exceedance count; \texttt{sin/cos\_doy}
+are seasonality harmonics; ERA5 fields are daily-mean unless marked
+\texttt{max}.}
+\label{tab:supp-stability}
+\begin{tabular}{lc@{\qquad}lc}
+\toprule
+\multicolumn{2}{c}{\textbf{London}} & \multicolumn{2}{c}{\textbf{Paris}}\\
+\textbf{Feature} & \textbf{Freq.} & \textbf{Feature} & \textbf{Freq.}\\
+\midrule
+lag\_1                  & $1.00$ & lag\_1                  & $1.00$ \\
+IVT (mean)              & $0.99$ & lag\_6                  & $1.00$ \\
+cos\_doy                & $0.99$ & K-index (mean)          & $1.00$ \\
+sin\_doy                & $0.99$ & lag\_7                  & $0.99$ \\
+K-index (mean)          & $0.98$ & IVT east (mean)         & $0.98$ \\
+$500$hPa geopotential   & $0.98$ & MSLP grad.\ (E--W)      & $0.98$ \\
+lag\_5                  & $0.95$ & lag\_5                  & $0.96$ \\
+MSLP grad.\ (E--W)      & $0.93$ & cos\_doy                & $0.96$ \\
+exc30                   & $0.91$ & NAO                     & $0.93$ \\
+lag\_2                  & $0.88$ & lag\_14                 & $0.93$ \\
+lag\_14                 & $0.83$ & exc30                   & $0.92$ \\
+lag\_8                  & $0.82$ & lag\_3                  & $0.86$ \\
+lag\_12                 & $0.82$ & MSLP grad.\ (N--S)      & $0.85$ \\
+lag\_9                  & $0.82$ & lag\_12                 & $0.84$ \\
+NAO                     & $0.81$ & lag\_2                  & $0.84$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:supp-horizon} gives the Brier skill score (relative to
+climatology) of the logistic $+$ERA5 occurrence model at each horizon of the
+sweep $h\in\{1,3,7,14,28\}$ (single fit per horizon; RES is the Brier
+resolution, $\times10^3$). This is the proper-score counterpart of the
+discrimination-only (PR-AUC) horizon figure in the main paper and
+Supplementary Figure~S3: in London, skill is effectively confined to $h=1$
+and collapses toward zero by $h=3$; in Paris --- consistent with its larger,
+more convective sample --- skill remains small but positive out to $h=28$,
+though it decays steadily from its $h=1$ value.
+
+\begin{table}[h]
+\centering\small
+\caption{Occurrence Brier skill score (BSS) by forecast horizon, logistic
+$+$ERA5, $95$th percentile. RES ($\times10^3$) is the Brier resolution
+(informativeness); climatology has BSS $=0$, RES $=0$ at every horizon by
+construction.}
+\label{tab:supp-horizon}
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{\textbf{London}} & \multicolumn{2}{c}{\textbf{Paris}}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+\textbf{Horizon $h$} & \textbf{BSS} & \textbf{RES} & \textbf{BSS} & \textbf{RES}\\
+\midrule
+$1$  & $+0.038$ & $0.829$ & $+0.117$ & $5.820$ \\
+$3$  & $-0.000$ & $0.032$ & $+0.048$ & $2.435$ \\
+$7$  & $-0.001$ & $0.047$ & $+0.032$ & $1.746$ \\
+$14$ & $+0.002$ & $0.103$ & $+0.017$ & $0.708$ \\
+$28$ & $+0.000$ & $0.009$ & $+0.015$ & $0.685$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \end{document}
