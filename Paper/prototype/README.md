@@ -16,12 +16,14 @@ generators. Self-contained PyTorch + scikit-learn — **no gpytorch needed**.
 | `fetch_era5_arco.py` | fetch ERA5 circulation/moisture from WeatherBench2 zarr. |
 | `fetch_era5_cds.py`  | fetch ERA5 convective-instability fields (CAPE/CIN/K-index/Total-Totals/IVT) from the Copernicus CDS. |
 | `run_prototype.py` | all experiments: `model_bakeoff`, `calibration_eval`, `feature_screen`, `intensity_test`, `intensity_firmup`, `intensity_multisplit`, `driver_ablation`, `horizon_sweep`, synthetic validation. |
+| `revision_analyses.py` | the additional analyses added during revision: (A) threshold-`u` sensitivity, (B) bootstrap block-size sensitivity, (C) synthetic dependent-hurdle misspecification, (D) real-data occurrence–intensity `ρ̂`, (E) feature-importance table (Supp. Table S2), (F) horizon-wise BSS table (Supp. Table S3). |
 | `../paper/figures/*.py` | scripts that produce every figure in the paper. |
 
 ## Run
 ```bash
 pip install torch numpy pandas scipy scikit-learn
 python3 run_prototype.py            # CPU is fine; ~2–4 min
+python3 revision_analyses.py all    # reproduces the revision numbers; A/B/E/F are fast, C/D take a few min each
 ```
 
 ## What it demonstrates (validated)
