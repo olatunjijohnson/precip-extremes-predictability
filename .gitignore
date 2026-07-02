@@ -26,3 +26,8 @@ data/*.zip
 
 # OS / editor
 .DS_Store
+
+# Internal planning docs (kept locally, not published)
+Paper/00_improvement_roadmap.md
+Paper/03_paper_outline.md
+Paper/05_revision_todo.md
