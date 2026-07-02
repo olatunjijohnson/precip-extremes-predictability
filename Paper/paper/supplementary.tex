@@ -146,8 +146,8 @@ Table~\ref{tab:supp-stability} shows the $15$ most frequently selected
 features (of $d=49$; Section~3.3) under $L_1$-logistic stability selection
 ($200$ subsamples of $60\%$ of the training data, selection frequency = share
 of subsamples in which a feature's coefficient is non-zero). The K-index of
-convective instability (\texttt{kx\_mean}) and the most recent index lag
-(\texttt{lag\_1}) are selected in essentially every subsample in both cities,
+convective instability and the most recent index lag (\texttt{lag\_1}) are
+selected in essentially every subsample in both cities,
 consistent with the main text; day-of-year seasonality, integrated
 moisture/vapour-transport fields, the east--west mean-sea-level-pressure
 gradient, and the NAO index also recur near the top of both lists.
@@ -157,8 +157,8 @@ gradient, and the NAO index also recur near the top of both lists.
 \caption{Occurrence feature-importance: $L_1$-logistic stability-selection
 frequency (top $15$ of $d=49$ features), $95$th percentile, $h=1$. Lags are
 days; \texttt{exc30} is the $30$-day exceedance count; \texttt{sin/cos\_doy}
-are seasonality harmonics; ERA5 fields are daily-mean unless marked
-\texttt{max}.}
+are seasonality harmonics; ``(mean)'' denotes the daily mean of an ERA5 field
+over the synoptic box.}
 \label{tab:supp-stability}
 \begin{tabular}{lc@{\qquad}lc}
 \toprule
@@ -170,7 +170,7 @@ IVT (mean)              & $0.99$ & lag\_6                  & $1.00$ \\
 cos\_doy                & $0.99$ & K-index (mean)          & $1.00$ \\
 sin\_doy                & $0.99$ & lag\_7                  & $0.99$ \\
 K-index (mean)          & $0.98$ & IVT east (mean)         & $0.98$ \\
-$500$hPa geopotential   & $0.98$ & MSLP grad.\ (E--W)      & $0.98$ \\
+$500$hPa geop.\ (mean)  & $0.98$ & MSLP grad.\ (E--W)      & $0.98$ \\
 lag\_5                  & $0.95$ & lag\_5                  & $0.96$ \\
 MSLP grad.\ (E--W)      & $0.93$ & cos\_doy                & $0.96$ \\
 exc30                   & $0.91$ & NAO                     & $0.93$ \\
