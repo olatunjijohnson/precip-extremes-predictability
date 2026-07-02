@@ -11,9 +11,11 @@ Sections
                                                      real data say?"
   (E) Feature-importance table (both cities)      -> Supplementary Table S2
   (F) Horizon-wise occurrence BSS (both cities)   -> Supplementary Table S3
+  (G) Bake-off at the 99th-percentile threshold   -> Supplementary Table S1
 
-The GP sections (C, D) are the slow ones (a few minutes each); the rest run in
-well under a minute. Run:  python3 revision_analyses.py [A|B|C|D|E|F|all]
+The GP sections (C, D) are the slow ones (a few minutes each); the distributional
+models in (G) also take a couple of minutes; the rest run in well under a minute.
+Run:  python3 revision_analyses.py [A|B|C|D|E|F|G|all]
 """
 import os, sys, warnings
 warnings.filterwarnings("ignore")
@@ -195,9 +197,28 @@ def section_F_horizon_bss():
             print(f"     h={h:2d}: BSS={bd['BSS']:+.3f}  RES(x1e3)={bd['RES'] * 1e3:.3f}")
 
 
+def section_G_bakeoff_99th(seeds=(0, 1, 2), epochs=600):
+    """London bake-off at the 99th-percentile threshold (Supplementary Table S1).
+    Reuses run_prototype.model_bakeoff by pointing it at the 99th index file."""
+    print("\n(G) BAKE-OFF AT THE 99th PERCENTILE  (London; cf. Supplementary Table S1)")
+    rp.set_city("london")
+    csv99 = os.path.normpath(os.path.join(
+        HERE, "..", "..", "data", "london_precip_extreme_index_99th_1989_2018.csv"))
+    if not os.path.exists(csv99):
+        print(f"  [skip] 99th index not found at {csv99}")
+        return
+    orig = rp._csv_path
+    rp._csv_path = lambda: csv99            # redirect the bake-off to the 99th index
+    try:
+        rp.model_bakeoff(seeds=seeds, epochs=epochs, u=1.0)
+    finally:
+        rp._csv_path = orig                 # restore, so later sections use the 95th
+
+
 SECTIONS = {"A": section_A_threshold_sensitivity, "B": section_B_blocksize_sensitivity,
             "C": section_C_misspecification, "D": section_D_real_rho,
-            "E": section_E_feature_importance, "F": section_F_horizon_bss}
+            "E": section_E_feature_importance, "F": section_F_horizon_bss,
+            "G": section_G_bakeoff_99th}
 
 if __name__ == "__main__":
     which = sys.argv[1].upper() if len(sys.argv) > 1 else "ALL"
