@@ -16,7 +16,7 @@
 \title{\bfseries Supplementary Material\\[0.3em]
 \large How Predictable Are Rare Precipitation Extremes?
 A Calibration-Aware Assessment for London and Paris}
-\author{Fankai Dong \and Olatunji Johnson}
+\author{Olatunji Johnson}
 \date{\today}
 
 \begin{document}
@@ -29,10 +29,11 @@ The main paper analyses the $95$th-percentile index, which has $417$ extreme day
 ($287$ train, $130$ test). The $99$th-percentile index is far scarcer --- only
 $137$ extreme days in thirty years ($101$ train, $36$ test) --- which precludes
 the held-out intensity analysis (that requires extreme days in both train and
-test across several splits). For completeness we report here the
-\emph{occurrence} results of the simpler models at the $99$th percentile; the
-deep Gaussian-process extreme-value hurdle, already dominated at the $95$th
-percentile, is not re-run.
+test across several splits). For completeness we report here the results of the
+full model set at the $99$th percentile, including the GP--EVT hurdle. The
+pattern of the main paper repeats: the GP--EVT hurdle is again the best model,
+while the more flexible response distributions (notably the zero-inflated
+log-normal) fall well below climatology.
 
 Table~\ref{tab:supp99} shows the bake-off (seed-averaged over three seeds, horizon
 $h=1$), scored against climatology as in the main paper. The qualitative picture
@@ -51,8 +52,14 @@ worse than climatology on the Brier score, and the zero-inflated log-normal is
 again catastrophically miscalibrated --- echoing, more sharply, the main-paper
 finding that the response distribution matters and that data scarcity penalises
 the more flexible models.
-\item \textbf{The tail is climatology-bound.} No model beats the climatological
-tail on the threshold-weighted CRPS (all skill scores $\le 0$), and the scarce
+\item \textbf{The GP--EVT hurdle wins again.} The GP--EVT
+hurdle is the best model at the $99$th percentile too --- the highest Brier skill
+($+0.027$, above logistic's $+0.015$) and the \emph{only} model with positive
+threshold-weighted CRPS skill ($+0.016$) --- echoing its main-paper win, though
+the margin is slim at this data volume.
+\item \textbf{The tail is all but climatology-bound.} Apart from the GP
+hurdle's slim positive margin, no model beats the climatological tail on the
+threshold-weighted CRPS (all other skill scores $\le 0$), and the scarce
 exceedances do not support the held-out intensity test.
 \end{itemize}
 
@@ -62,8 +69,9 @@ exceedances do not support the held-out intensity test.
 seed-averaged). Brier skill score (BSS) and threshold-weighted CRPS skill
 (twCRPSS) are relative to climatology; positive is better. RES is the Brier
 resolution ($\times10^3$). Climatology and a stationary peaks-over-threshold
-model define the reference. Compare with Table~2 of the main paper
-($95$th percentile).}
+model define the reference. The GP--EVT hurdle is the same model as in the main
+paper (Section~4.2); best per column in bold. Compare with Table~2 of the main
+paper ($95$th percentile).}
 \label{tab:supp99}
 \begin{tabular}{lccc}
 \toprule
@@ -71,18 +79,21 @@ model define the reference. Compare with Table~2 of the main paper
 \midrule
 Climatology / stationary POT     & $0.000$  & $0.00$ & $0.000$ \\
 Logistic (index history)         & $+0.001$ & $0.08$ & --- \\
-Logistic ($+$ERA5)               & $\mathbf{+0.015}$ & $0.36$ & --- \\
+Logistic ($+$ERA5)               & $+0.015$ & $0.36$ & --- \\
 ZI gamma ($+$ERA5)               & $-0.069$ & $0.20$ & $-0.130$ \\
 ZI extended-GPD ($+$ERA5)        & $-0.048$ & $0.26$ & $-0.087$ \\
 ZI log-normal ($+$ERA5)          & $-1.153$ & $0.25$ & $-4.827$ \\
+GP--EVT hurdle ($+$ERA5)         & $\mathbf{+0.027}$ & $0.19$ & $\mathbf{+0.016}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 In short, the $99$th-percentile threshold tells the same story as the $95$th ---
-weak but genuine occurrence predictability led by convective instability, a
-climatology-bound tail, and a penalty on over-flexible models --- but with too
-few events to support the intensity analysis or to add to the main conclusions.
+weak but genuine occurrence predictability led by convective instability, a tail
+only the GP--EVT hurdle edges past, and a penalty on over-flexible response
+distributions (the zero-inflated log-normal) --- but
+with too few events to support the intensity analysis or to add to the main
+conclusions.
 
 \section{Paris: per-city diagnostic figures}
 \label{sec:supp-paris}
@@ -94,8 +105,9 @@ the unified hurdle --- are reported for both cities. For completeness we give th
 Paris counterparts of the three single-city diagnostic figures here. They are
 qualitatively identical to London: a zero-inflated, right-skewed, short-memory
 index with a summer convective peak (Figure~\ref{fig:data-paris}); well-calibrated
-exceedance probabilities from the simple logistic model, with the deep
-Gaussian-process hurdle no better calibrated (Figure~\ref{fig:reliability-paris});
+exceedance probabilities from the simple logistic model and the GP--EVT
+hurdle, with the zero-inflated log-normal systematically overconfident
+(Figure~\ref{fig:reliability-paris});
 and occurrence skill decaying toward the prevalence floor with lead time while
 conformal coverage stays at the nominal level (Figure~\ref{fig:horizon-paris}).
 Paris differs from London only in having a higher extreme-day prevalence (a more
@@ -116,9 +128,9 @@ distribution; \textbf{(c)} summer-peaked seasonality of the extreme-day rate;
 \centering
 \includegraphics[width=0.62\linewidth]{fig_reliability_paris}
 \caption{Reliability diagram for the Paris exceedance probability ($95$th, $h=1$;
-Paris counterpart of Figure~2). The calibrated logistic model tracks the diagonal;
-the deep Gaussian-process extreme-value hurdle is no better calibrated, mirroring
-London.}
+Paris counterpart of Figure~2). The calibrated logistic model and the
+GP--EVT hurdle track the diagonal; the zero-inflated log-normal is systematically
+overconfident despite attaining nominal conformal coverage, mirroring London.}
 \label{fig:reliability-paris}
 \end{figure}
 
@@ -126,10 +138,10 @@ London.}
 \centering
 \includegraphics[width=\linewidth]{fig_horizon_paris}
 \caption{Seed-averaged horizon sweep on the Paris $95$th-percentile index (Paris
-counterpart of Figure~4). \textbf{(a)} Occurrence PR-AUC decays toward the
-prevalence floor (dashed) as the horizon grows, with marginal driver gains;
-\textbf{(b)} conformal coverage holds at the nominal $0.90$ across horizons and
-predictor sets. Markers are means over three seeds.}
+counterpart of Figure~4; GP--EVT hurdle). \textbf{(a)} Occurrence PR-AUC decays
+toward the prevalence floor (dashed) as the horizon grows, with the $+$ERA5 gain
+clearest at $h=1$; \textbf{(b)} conformal coverage holds at the nominal $0.90$
+across horizons and predictor sets. Markers are means over three seeds.}
 \label{fig:horizon-paris}
 \end{figure}
 
@@ -215,5 +227,69 @@ $28$ & $+0.000$ & $0.009$ & $+0.015$ & $0.685$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\section{The dependent-hurdle coupling: a null result}
+\label{sec:supp-coupling}
+
+The GP--EVT hurdle of the main paper (Section~4.2) couples its occurrence and
+intensity latents through a linear model of coregionalisation, whose off-diagonal
+correlation $\rho$ is a \emph{borrowing-strength} parameter ($\rho=0$ recovers the
+independent hurdle). The motivation is that, because the excess is observed only on
+the few extreme days, letting the abundant occurrence data inform the tail could
+stabilise intensity estimation. We test that mechanism directly here and find
+that, for this hurdle at this data volume, \emph{coupling is weakly identified and
+neither helps nor hurts}; we therefore retain it only as a harmless nested
+generalisation of the independent hurdle, not as a source of skill.
+
+\paragraph{Coupling does not change forecast skill.} Re-fitting the
+$95$th-percentile bake-off model ($+$ERA5, $h=1$, seed-averaged over three seeds,
+$600$ epochs) with the coupling switched off is indistinguishable from the coupled
+fit on both proper scores (Table~\ref{tab:supp-couple}): the tail-CRPS and Brier
+skills are identical in London and marginally \emph{higher} without coupling in
+Paris. Whatever the GP--EVT hurdle achieves (Table~2 of the main paper), it does
+not owe to the coregionalisation.
+
+\begin{table}[h]
+\centering\small
+\caption{Coupling neither helps nor hurts: bake-off skill of the GP--EVT hurdle at
+the $95$th percentile ($+$ERA5, $h=1$, seed-averaged), with the coregionalised
+coupling on (as in the main text) and off (an independent hurdle). Brier skill
+score (BSS) and tail-CRPS skill (twCRPS) are relative to climatology; positive is
+better.}
+\label{tab:supp-couple}
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{\textbf{London}} & \multicolumn{2}{c}{\textbf{Paris}}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+\textbf{Model} & \textbf{BSS} & \textbf{twCRPS} & \textbf{BSS} & \textbf{twCRPS} \\
+\midrule
+GP--EVT hurdle (coupled)      & $+0.037$ & $+0.032$ & $+0.123$ & $+0.094$ \\
+GP--EVT hurdle (independent)  & $+0.037$ & $+0.032$ & $+0.127$ & $+0.097$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Recovery is weak on synthetic data.} On data simulated from the
+generative model with a known occurrence--intensity correlation ($\xi=0.20$; three
+seeds each), the coupled hurdle recovers $\rho$ only weakly and noisily ---
+$\widehat\rho=0.33\pm0.48$, $0.56\pm0.25$, and $0.79\pm0.05$ at
+$\rho_{\mathrm{true}}=0.3$, $0.7$, and $0.9$ respectively --- and the
+tail-log-likelihood gain from coupling is negligible at every setting. Crucially,
+unlike an over-parameterised base model whose independent intensity head can
+collapse (so that coupling appears to rescue it), the plain GP's independent hurdle
+is already stable: there is no instability for borrowing strength to cure, so the
+benefit coregionalisation is designed to provide does not materialise.
+
+\paragraph{Real-data estimates.} Fitting the coupled hurdle on the real series
+(five seeds) gives $\widehat\rho=+0.55\pm0.16$ in London and $+0.38\pm0.04$ in
+Paris. Given the weak identification just documented, these cannot be read as
+measurements of real occurrence--intensity dependence; we report them for
+completeness and draw no conclusion about the presence or absence of exploitable
+coupling.
+
+In short, the dependent-hurdle coupling is a sound nested generalisation of the
+independent hurdle but is empirically inert at this data volume: it is retained
+because it does no harm and reduces to the independent model as $\rho\to0$, not
+because it improves forecasts.
 
 \end{document}

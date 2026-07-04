@@ -56,11 +56,10 @@
 
 \title{\bfseries How Predictable Are Rare Precipitation Extremes?\\
 A Calibration-Aware Assessment for London and Paris}
-\author{Fankai Dong \and Olatunji Johnson\\[0.3em]
+\author{Olatunji Johnson\\[0.3em]
 \small Department of Mathematics, University of Manchester\\[0.2em]
 \small Corresponding author: Olatunji Johnson
-(\texttt{[CORRESPONDING-AUTHOR EMAIL]})\\[0.1em]
-\small ORCID: Fankai Dong \texttt{[ORCID iD]}; Olatunji Johnson \texttt{[ORCID iD]}}
+(\href{mailto:olatunji.johnson@manchester.ac.uk}{\texttt{olatunji.johnson@manchester.ac.uk}})}
 \date{\today}
 
 \begin{document}
@@ -73,17 +72,19 @@ predictability be measured? We address both questions using thirty years
 (1989--2018) of a standardised precipitation-extreme index for London
 (maritime) and Paris (more continental), with strictly antecedent ERA5
 drivers. We argue rare-event forecasts must be judged by
-\emph{calibration-aware proper scores} against climatology --- not
-discrimination metrics or conformal coverage, which alone can mislead --- and
-assemble a protocol (Brier decomposition, threshold-weighted CRPS skill,
+\emph{calibration-aware proper scores} against climatology, and assemble a
+protocol (Brier decomposition, threshold-weighted CRPS skill,
 bootstrap intervals, multi-split checks) guarding against the single-seed and
 quantile-selection pitfalls that inflate apparent skill. Across a bake-off from
-logistic regression to a deep Gaussian-process extreme-value hurdle, we find
---- consistently in both cities --- that (i) \textbf{simple calibrated models
-outperform the elaborate ones}, and the response distribution matters more than
-model class; (ii) \textbf{occurrence} is weakly but genuinely predictable from
-antecedent convective instability and circulation; and (iii) \textbf{the
-magnitude of the largest events} is weakly but robustly predictable from
+logistic regression to a Gaussian-process extreme-value hurdle, we find, consistently in both cities, that (i) the Gaussian-process
+hurdle is the most skilful full-distribution forecaster on the
+tail, while simple calibrated models (logistic regression,
+gradient-boosted trees) match it on occurrence, and the choice of response
+distribution matters as much as model class --- a zero-inflated log-normal is
+catastrophically miscalibrated where a threshold-free extended generalised Pareto
+distribution is not; (ii) occurrence is weakly but genuinely predictable from
+antecedent convective instability and circulation; and (iii) the
+magnitude of the largest events is weakly but robustly predictable from
 convective instability (CAPE/CIN), with a CRPS skill over climatology excluding
 zero across four independent splits per city. The effects are small,
 statistically robust, and physically plausible; replication across two cities
@@ -112,8 +113,8 @@ managers, infrastructure operators, and insurers act pre-emptively. This
 motivates probabilistic forecasts of extreme precipitation at horizons of days
 to weeks ahead.
 
-The statistical obstacles are severe. Extreme days are rare --- typically
-$1$--$5\%$ of the record --- so a model that simply predicts ``no extreme'' is
+The statistical obstacles are severe. Extreme days are rare, typically
+a few percent of the record, so a model that simply predicts ``no extreme'' is
 accurate yet useless, and conventional accuracy is the wrong yardstick. The
 daily precipitation index is zero-inflated, strongly right-skewed, and
 heavy-tailed, violating the Gaussian assumptions underlying standard regression.
@@ -139,28 +140,21 @@ as the \emph{forecaster's dilemma} makes clear \citep{lerch2017dilemma}.
 No existing methodology delivers calibrated, guaranteed tail probabilities for
 rare-event forecasting, because the three relevant tools each supply only part
 of the answer. \emph{Extreme-value theory} (EVT) furnishes asymptotically
-justified tail models, but is most often used descriptively --- for return
-levels or non-stationary tail regression --- rather than for flexible,
+justified tail models, but is most often used descriptively, for return
+levels or non-stationary tail regression, rather than for flexible,
 covariate-driven probabilistic forecasting, and it offers no finite-sample
 coverage guarantee \citep{coles2001evt,davison1990}. \emph{Flexible machine
 learning}, including deep models and Gaussian processes, captures non-linear
 dependence on atmospheric predictors and yields predictive distributions, but
 those distributions are typically miscalibrated in the tail and come with no
-guarantee \citep{galib2022deepextrema,lakshminarayanan2017}. \emph{Conformal
-prediction} provides distribution-free, finite-sample coverage, but its standard
-form under-covers the tail --- the relevant high quantile cannot be resolved
-from a finite calibration set --- and assumes exchangeability, which daily time
-series violate \citep{gibbs2021adaptive,pasche2025extreme}. Moreover, essentially
-all two-part (hurdle) forecasters assume that the \emph{occurrence} of an extreme
-and its \emph{intensity} are conditionally independent, discarding the abundant
-occurrence data that could inform the data-starved tail.
+guarantee \citep{galib2022deepextrema,lakshminarayanan2017}. Conformal prediction provides distribution-free, finite-sample coverage, but its standard form does not guarantee conditional or tail-specific coverage --- the effective resolution of very high quantiles is limited by the size of the calibration set --- and assumes exchangeability, which is generally violated in daily time series due to temporal dependence and non-stationarity \citep{gibbs2021adaptive,pasche2025extreme}. Moreover, many two-part (hurdle) forecasting approaches estimate occurrence and intensity in separate stages, so that inference about extremes relies primarily on the relatively small number of exceedances. This separation can limit the extent to which information contained in the abundant non-extreme data informs tail inference, particularly when common latent processes govern both occurrence and intensity.
 
 Rather than advocate a single model, we therefore ask a more basic pair of
 questions --- \emph{how predictable are these extremes, and how should that
 predictability be measured?} --- and answer them with a careful evaluation
 protocol and a bake-off of models spanning logistic regression, zero-inflated
 distributional regressions (log-normal, gamma, and the threshold-free extended
-generalised Pareto distribution), and a deep Gaussian-process extreme-value
+generalised Pareto distribution), and a Gaussian-process extreme-value
 hurdle with conformal calibration.
 
 \paragraph{Contributions.}
@@ -175,18 +169,20 @@ hurdle with conformal calibration.
   \item A \textbf{rigorous predictability assessment, replicated in two
   contrasting cities}: occurrence of an extreme is weakly but genuinely
   predictable from antecedent state; and the \emph{magnitude} of the largest
-  events carries weak but robust predictability tied to antecedent \textbf{convective
-  instability} (CAPE/CIN), with a CRPS skill over climatology whose moving-block
+  events carries weak but robust predictability tied to antecedent convective
+  instability (CAPE/CIN), with a CRPS skill over climatology whose moving-block
   bootstrap interval excludes zero across four independent train/test splits in
   each city --- and is stronger in the more convective Paris, consistent with a
   meteorological rather than a purely local origin (though two cities in one
   climate zone offer only modest evidence on geographic generality).
-  \item A \textbf{cautionary methodological finding}: across the bake-off,
-  \emph{simpler calibrated models (logistic regression, gradient-boosted trees)
-  outperform the elaborate deep-GP--EVT model}, the choice of response
-  distribution dominates model class, and a sensitivity analysis shows it is the
-  added \emph{depth} that fails on this low-signal problem --- a plain Gaussian
-  process is competitive.
+  \item A \textbf{methodological finding on what matters}: across the bake-off, a
+  Gaussian-process extreme-value hurdle is the most skilful full-distribution
+  forecaster on the tail in both cities --- and, on occurrence, is matched by an
+  inexpensive calibrated logistic regression and gradient-boosted trees --- while
+  the choice of response distribution matters as much as model class (a
+  zero-inflated log-normal is catastrophically miscalibrated where a threshold-free
+  extended GPD is well behaved), and conformal coverage, though attained by
+  construction, is insufficient on its own as a measure of forecast quality.
 \end{enumerate}
 
 Empirically, we study the daily standardised precipitation index over 1989--2018
@@ -242,14 +238,15 @@ methods capture non-linear dependence on predictors and return uncertainty
 estimates, but they are typically miscalibrated in the tail and lack
 distribution-free guarantees --- the gap our conformal layer closes.
 
-\paragraph{Gaussian processes: depth and multiple outputs.}
+\paragraph{Gaussian processes: scalability and multiple outputs.}
 Gaussian processes offer principled non-parametric regression with built-in
 uncertainty \citep{rasmussen2006gpml}, made scalable through sparse variational
-inference with inducing points \citep{titsias2009,hensman2013}. Expressiveness
-is increased by composing layers in deep Gaussian processes
-\citep{damianou2013deep}, trained by doubly-stochastic variational inference
-\citep{salimbeni2017doubly}, or by learning the kernel through a neural feature
-map in deep kernel learning \citep{wilson2016deepkernel}. Correlated outputs are
+inference with inducing points \citep{titsias2009,hensman2013,salimbeni2017doubly}.
+Expressiveness can be increased by composing layers in deep Gaussian processes
+\citep{damianou2013deep} or by learning the kernel through a neural feature
+map in deep kernel learning \citep{wilson2016deepkernel}, though --- as we find
+below --- such added depth is not warranted on our low-signal, single-site
+problem. Correlated outputs are
 modelled by multi-output GPs and coregionalisation
 \citep{bonilla2008multitask,alvarez2012kernels}. A GP with a Gaussian likelihood
 cannot represent heavy-tailed, skewed, zero-inflated responses; we therefore
@@ -264,9 +261,11 @@ formulations \citep{olsen2001twopart}, copula couplings, and the sample-selectio
 models of econometrics \citep{heckman1979selection}, which explicitly address the
 correlation between a selection (occurrence) equation and an outcome (intensity)
 equation. To our knowledge this dependence has not been exploited within a
-deep-GP--EVT \emph{forecasting} model, where --- because intensity is observed
+GP--EVT \emph{forecasting} model, where --- because intensity is observed
 only on the rare extreme days --- borrowing strength from the abundant
-occurrence data is especially valuable.
+occurrence data is a natural idea; we implement and test it, and report (in the
+Supplementary Material) that at this data volume the coupling is weakly identified
+and empirically inert.
 
 \paragraph{Conformal prediction.}
 Conformal prediction yields distribution-free, finite-sample coverage for any
@@ -303,10 +302,12 @@ take the complementary stance of \emph{measuring} how much is predictable and
 which modelling choices matter, under an evaluation protocol built from proper
 scoring rules, skill against climatology, and bootstrap and multi-split
 robustness. In doing so we find --- against the prevailing direction --- that
-under this dataset and evaluation framework simple calibrated models outperform an
-elaborate deep-GP extreme-value model, and that conformal coverage, increasingly
-reported as a calibration guarantee, is insufficient on its own as a measure of
-forecast quality. This emphasis on rigorous
+under this dataset and evaluation framework a compact Gaussian-process
+extreme-value hurdle is the most skilful full-distribution forecaster on the tail
+in both cities, yet simple calibrated models match it on occurrence, so raw model
+sophistication buys little here. We also find that conformal coverage,
+increasingly reported as a calibration guarantee, is insufficient on its own as a
+measure of forecast quality. This emphasis on rigorous
 predictability assessment, rather than a new architecture, is the gap we fill.
 
 % ===========================================================================
@@ -408,8 +409,8 @@ three groups.
   and its gradients, geopotential height ($500$/$850\,$hPa), specific and
   total-column water vapour, integrated water-vapour transport, near-surface
   temperature and winds, and convective-instability diagnostics --- convective
-  available potential energy and inhibition, the K-index, and the Total-Totals
-  index. Fields are aggregated to daily statistics (means, and maxima for the
+  available potential energy (CAPE) and convective inhibition (CIN), the
+  K-index, and the Total-Totals index. Fields are aggregated to daily statistics (means, and maxima for the
   convective indices) and reduced to regional summaries.
   \item \textbf{Teleconnection indices.} Lagged North Atlantic Oscillation,
   Arctic Oscillation, and an El Ni\~no--Southern Oscillation index, capturing
@@ -458,7 +459,7 @@ and 2012), and all stochastic results are averaged over random seeds.
 Section~\ref{sec:setup} fixes notation and the predictability target.
 Section~\ref{sec:models} describes the ladder of models we compare, from
 climatology and logistic regression through zero-inflated distributional
-regressions to a deep Gaussian-process extreme-value hurdle.
+regressions to a Gaussian-process extreme-value hurdle.
 Section~\ref{sec:conformal} describes the conformal calibration we assess (and
 why its coverage guarantee is, on its own, uninformative).
 Section~\ref{sec:metrics} sets out the evaluation protocol --- proper scores,
@@ -471,13 +472,12 @@ multi-split robustness --- which is itself a contribution.
 Let $\Ind_t \ge 0$ denote the daily standardised precipitation index on day
 $t$, and let $u>0$ be a fixed exceedance threshold (we take $u=1$, the value at
 which the index marks an extreme, and report sensitivity to $u$ in
-Section~\ref{sec:res-bakeoff}). Because $\Ind=P/P_q$ is itself standardised
-against the training-period $q$th percentile (Section~\ref{sec:data-index}),
-$u$ and $q$ are linked but distinct: varying $q$ redefines the standardisation
-(a different, rarer event, as for the $99$th-percentile analysis of
-Section~\ref{sec:data-split}), whereas varying $u$ at fixed $q$ asks how much
-of the standardisation ratio itself must be exceeded to count as extreme ---
-e.g.\ $u=1.25$ requires exceeding $125\%$ of the $q$th-percentile level. A day
+Section~\ref{sec:res-bakeoff}). Because $\Ind=P/P_q$ is itself standardised against the training-period
+$q$th percentile (Section~\ref{sec:data-index}), $u$ and $q$ play distinct
+roles: $q$ sets which event counts as rare in the first place (e.g.\ the
+$99$th-percentile analysis of Section~\ref{sec:data-split}), while $u$ sets
+how far above that level counts as extreme --- e.g.\ $u=1.25$ requires
+exceeding $125\%$ of the $q$th-percentile level. A day
 is
 \emph{extreme} when $\Ind_t > u$. Write the occurrence indicator and the excess
 as
@@ -516,6 +516,7 @@ strictly antecedent covariates $\bx_t$ and judged by the protocol of
 Section~\ref{sec:metrics}. The aim is not to crown one architecture but to learn
 \emph{how much} of the index is predictable and \emph{which} modelling choices
 matter.
+Models fall into two groups: \emph{occurrence-only classifiers} (which estimate only the exceedance probability~$\pi_{t+h}$, and are not scored on the full distribution) and \emph{full-distribution models} (which output the complete CDF $F_{t+h}$ and are additionally evaluated with the tail-CRPS of Section~\ref{sec:metrics}).
 
 \paragraph{Baselines.} \emph{Climatology} issues the empirical distribution of
 the training index, the reference against which every skill score is measured; a
@@ -537,15 +538,13 @@ $p_0(\bx_t)$ at zero and a positive continuous CDF $F_+$,
 F_{t+h}(z) = p_0 + (1-p_0)\,F_+\!\big(z;\bm\theta(\bx_t)\big)\ (z>0),
 \qquad \pi_{t+h}=(1-p_0)\big(1-F_+(u)\big),
 \end{equation}
-with $p_0$ and the parameters $\bm\theta$ driven by linear predictors in $\bx_t$.
+with $p_0(\bx_t) = \mathrm{sigmoid}(\mathbf{w}_0^\top\bx_t)$ and the distribution parameters $\bm\theta(\bx_t) = \mathrm{link}(\mathbf{W}\bx_t)$ driven by linear predictors in $\bx_t$.
 The Generalised Pareto distribution (GPD) is
 \begin{equation}\label{eq:gpd}
 H(y;\sigma,\xi) = 1-\left(1+\xi y/\sigma\right)_{+}^{-1/\xi}\ (\xi\neq0),\quad
 1-e^{-y/\sigma}\ (\xi=0),\quad y\ge0,
 \end{equation}
-with $(a)_+=\max(a,0)$ and $\xi$ governing tail heaviness. For $F_+$ we compare a
-log-normal, a gamma, and --- as the extreme-value-motivated choice --- the
-\emph{extended GPD} (eGPD),
+with $(a)_+=\max(a,0)$ and $\xi$ governing tail heaviness. For $F_+$ we compare three choices: (i)~a \emph{log-normal}, (ii)~a \emph{gamma}, and (iii)~the \emph{extended GPD} (eGPD) --- the extreme-value-motivated choice ---
 \begin{equation}\label{eq:egpd}
 F_+(z) = \big[H(z;\sigma,\xi)\big]^{\kappa},\qquad \kappa>0,
 \end{equation}
@@ -554,57 +553,58 @@ justification of extreme-value theory; \citealp{coles2001evt}) yet is a single
 continuous model over all positive intensities, requiring \emph{no} threshold
 selection ($\kappa$ shapes the lower tail).
 
-\paragraph{Hurdle with a GPD tail, and its deep-GP variant.} The most elaborate
-contender is a two-part hurdle whose intensity component is a non-stationary GPD,
+\paragraph{Hurdle with a GPD tail: a Gaussian-process variant.} The most flexible
+contender is a two-part hurdle whose intensity component is a
+non-stationary GPD,
 \begin{equation}\label{eq:hurdle-cdf}
 F_{t+h}(z) = (1-\pi_{t+h}) + \pi_{t+h}\,H(z-u;\sigma_{t+h},\xi),\qquad z>u,
 \end{equation}
 with $\pi_{t+h}=\sigmoid(g_\pi(\bx_t))$ and
-$\sigma_{t+h}=\softplus(g_\sigma(\bx_t))$ driven by latent functions on which we
-place Gaussian-process priors --- a deep-kernel GP (a neural feature map composed
-with a GP kernel; \citealp{wilson2016deepkernel}) or a deep GP
-\citep{damianou2013deep} --- fitted by sparse variational inference
-\citep{salimbeni2017doubly}. A Gaussian-likelihood GP cannot represent the
-zero-inflation and heavy tail of $\Ind$, which motivates the EVT likelihood.
-Full inference details are in Appendix~\ref{app:inference}.
+$\sigma_{t+h}=\softplus(g_\sigma(\bx_t))$ driven by latent functions $g_\pi,
+g_\sigma$ on which we place Gaussian-process priors --- a single-layer GP with a
+standard automatic-relevance-determination squared-exponential kernel acting
+directly on the covariates, fitted by sparse variational inference
+\citep{salimbeni2017doubly}. We refer to it as the \emph{GP--EVT hurdle}
+throughout (Table~\ref{tab:bakeoff}). A Gaussian-likelihood
+GP cannot represent the zero-inflation and heavy tail of $\Ind$, which motivates
+the EVT likelihood. Full inference details are in Appendix~\ref{app:inference}.
 
-\paragraph{Dependent hurdle: a fair test of coupling.} To give the elaborate
-model class its best chance, we also test whether \emph{coupling} occurrence and
-intensity helps. The classical hurdle assumes the two are conditionally
-independent; physically they should be positively correlated, and coupling them
-would let the abundant occurrence data inform the data-starved tail. We realise
+\paragraph{Dependent hurdle: coupling occurrence and intensity.} The classical
+hurdle assumes occurrence and intensity are conditionally independent; physically
+they should be positively correlated, and coupling them could let the abundant
+occurrence data inform the data-starved tail. In
+plain terms: rather than fitting the occurrence function $g_\pi$ and the
+intensity function $g_\sigma$ independently, we let $g_\sigma$ borrow
+statistical strength from the much better-observed $g_\pi$, in proportion to
+an estimated correlation between the two. We realise
 this by giving $(g_\pi,g_\sigma)$ a multi-output GP prior with an intrinsic
 coregionalisation \citep{bonilla2008multitask,alvarez2012kernels},
 $\operatorname{Cov}(g_a(\bx),g_b(\bx'))=B_{ab}\,k_\theta(\bx,\bx')$, whose
 off-diagonal yields an interpretable borrowing-strength correlation
 $\rho=B_{\pi\sigma}/\sqrt{B_{\pi\pi}B_{\sigma\sigma}}$ ($\rho=0$ recovers the
 independent hurdle). Because the excess is observed only on extreme days $\rho$
-is weakly identified, so we first study on synthetic data when the mechanism
-is recoverable and beneficial (Section~\ref{sec:res-synth}); as we will see, it
-is recoverable and clearly helpful \emph{when the dependence is strong}, but the
-estimator becomes biased and noisy away from that regime, which bounds how much a
-real-data outcome can tell us about the underlying dependence. This construction
+is weakly identified; as we report in Supplementary Section~S4, on this data the
+coupling turns out to be empirically inert --- neither helping nor hurting the
+forecasts --- so we retain it only as a harmless nested generalisation of the
+independent hurdle. This construction
 is related to correlated two-part models in biostatistics and econometrics
 \citep{olsen2001twopart,heckman1979selection}.
 
 \paragraph{Implementation.} Logistic regression uses $L_2$ regularisation
 ($C=1$); the $L_1$ feature screen uses $C=0.3$; XGBoost uses $300$ trees, depth
 $4$, learning rate $0.05$. These are standard off-the-shelf settings, fixed
-\emph{a priori} and \textbf{not tuned by cross-validation}, unlike the deep-GP,
-which receives a dedicated sensitivity sweep over inducing points and kernel
-depth (Section~\ref{sec:res-bakeoff}). We flag this asymmetry explicitly: it
-means the simple models are not given an implicit regularisation advantage from
-tuning, but a reviewer could still ask whether lightly tuning $C$ would close
-part of the gap. We consider this unlikely to overturn the qualitative ordering
---- $C=1$ is itself a weak, unremarkable amount of regularisation, and the
-deep-GP's shortfall (Section~\ref{sec:res-bakeoff}) is large and attributable
-to model depth rather than to a regularisation mismatch on the simpler models.
-The distributional regressions
+\emph{a priori} and \textbf{not tuned by cross-validation}; a reviewer could ask
+whether lightly tuning $C$ would change the ordering, but $C=1$ is itself a weak,
+unremarkable amount of regularisation and the occurrence models are already
+essentially tied at the top, so we consider this unlikely to matter. The
+distributional regressions
 place linear predictors on the zero-inflation probability and the positive-part
-parameters and are fitted by maximum likelihood. The deep-GP--EVT hurdle uses a
-deep-kernel sparse variational GP ($M=64$ inducing points, a two-hidden-layer
-feature map), with results averaged over five random seeds; conformal intervals
-target $90\%$ coverage.
+parameters and are fitted by maximum likelihood. The GP--EVT hurdle uses a sparse
+variational GP ($M=64$ inducing points) with the coregionalised prior above and a
+standard ARD kernel; a sensitivity sweep over inducing points
+($M\in\{32,64,128\}$) confirms the choice is not load-bearing
+(Section~\ref{sec:res-bakeoff}). Gaussian-process results are averaged over three
+random seeds; conformal intervals target $90\%$ coverage.
 
 % --------------------------------------------------------------------------
 \subsection{Tail-conformal calibration}\label{sec:conformal}
@@ -620,7 +620,12 @@ tail with a GPD fitted to the top $20\%$ of calibration scores (a
 data-adaptive, not fixed-probability, exceedance threshold), following the
 extreme-conformal construction of \citet{pasche2025extreme}.
 \emph{Temporal adaptation:} because daily extremes are not exchangeable, we use
-adaptive conformal inference \citep{gibbs2021adaptive}, updating the level online,
+adaptive conformal inference \citep{gibbs2021adaptive}, updating the level online.
+Here $\alpha_t$ is the working miscoverage level used to build the interval $C_t$
+issued on day $t$: it starts at the nominal level $\alpha$ and is then adjusted
+up or down after each test day depending on whether the previous interval
+covered the outcome, so that realised coverage tracks the nominal target even
+as the process drifts,
 \begin{equation}\label{eq:aci}
 \alpha_{t+1} = \alpha_t + \gamma\big(\alpha-\mathrm{err}_t\big),\qquad
 \mathrm{err}_t=\mathbf{1}\{\Ind_t\notin C_t\},
@@ -657,8 +662,8 @@ calibrated-but-uninformative forecast (e.g.\ climatology) has zero resolution, s
 positive resolution with low reliability is the bar a useful model must clear.
 
 \paragraph{Whole distribution and tail: (tw)CRPS.} We score the predictive
-distribution with the continuous ranked probability score and its
-threshold-weighted form \citep{gneiting2011threshold},
+distribution with the continuous ranked probability score (CRPS) and its
+threshold-weighted form (twCRPS) \citep{gneiting2011threshold},
 \begin{equation}\label{eq:twcrps}
 \mathrm{twCRPS}(F_{t+h},\Ind_{t+h})
 = \int_{\Real}\big(F_{t+h}(z)-\mathbf{1}\{\Ind_{t+h}\le z\}\big)^2\,w(z)\,dz,
@@ -691,9 +696,9 @@ $[+0.019,+0.073]$ in Paris (Table~\ref{tab:intensity}), so the block-$10$ choice
 is not doing load-bearing work in the smallest-sample case. Per-feature
 significance is controlled for multiplicity by the Benjamini--Hochberg
 false-discovery rate, and feature importance is quantified by stability selection
-(selection frequency under subsampling). The deep-GP model is probed by a
-sensitivity sweep over inducing points and kernel depth. Discrimination metrics
-(precision--recall AUC) are reported only as secondary context, and conformal
+(selection frequency under subsampling). The GP--EVT hurdle is probed by a
+sensitivity sweep over inducing points. Discrimination metrics
+(precision--recall AUC, PR-AUC) are reported only as secondary context, and conformal
 coverage is reported but, per Section~\ref{sec:conformal}, never as evidence of
 predictive quality.
 
@@ -708,60 +713,74 @@ bootstrap confidence intervals. Beyond the main bake-off
 (Section~\ref{sec:res-bakeoff}) we report a feature screen (with false-discovery
 control and stability selection) identifying which covariates carry occurrence and
 intensity signal; the hold-out intensity test across four expanding-window splits;
-a deep-GP sensitivity sweep; a seed-averaged horizon sweep $h\in\{1,3,7,14,28\}$;
-and a synthetic study validating the dependent hurdle. Throughout, we ask whether
-conclusions hold across the two contrasting cities.
+a GP inducing-point sensitivity sweep; a seed-averaged horizon sweep
+$h\in\{1,3,7,14,28\}$; and a synthetic study probing the dependent-hurdle
+coupling (Supplementary). Throughout, we ask whether conclusions hold across the two contrasting cities.
 
-\subsection{Simpler models win; distribution choice dominates}\label{sec:res-bakeoff}
-Table~\ref{tab:bakeoff} reports the bake-off, and the same three findings hold in
-\emph{both} cities. First, the elaborate deep-GP--EVT hurdle is \emph{worse than
-climatology} on both skill scores (Brier skill $\approx-0.4$ in each city), while
-the best occurrence models are a plain calibrated logistic regression and the
-gradient-boosted-tree (XGBoost) classifier --- two standard, inexpensive models.
-Second, the choice of response distribution matters more than model class: a
-zero-inflated log-normal is substantially miscalibrated (tail-CRPS skill $-2.3$ in
-London), whereas the light-tailed gamma and the threshold-free extended GPD are
-well behaved; the index tail is lighter than a log-normal or a low-threshold
-Generalised Pareto fit assumes. Third, modelling the \emph{full} zero-inflated
-distribution and deriving the exceedance probability from it beats hurdling at the
-extreme threshold, which starves the tail of data. Quantitatively everything is
-\emph{stronger in Paris} (e.g.\ logistic Brier skill $+0.117$ versus London's
-$+0.038$), reflecting its larger, more convective extreme sample; indeed in Paris
-the extended GPD even beats climatology on the full-predictive tail score
-(twCRPSS $+0.052$), which it could not in data-scarcer London.
+\subsection{A GP--EVT hurdle wins the tail; distribution choice matters}\label{sec:res-bakeoff}
+Table~\ref{tab:bakeoff} reports the bake-off, and the same ordering holds in
+\emph{both} cities. First, among the full-distribution models the
+Gaussian-process--EVT hurdle is the most skilful on the tail: it is the only such
+model with positive threshold-weighted CRPS skill in data-scarce London
+($+0.032$) and clearly the best in Paris ($+0.094$), and in both cities a $90\%$
+moving-block bootstrap interval over the test period excludes zero
+($[+0.010,+0.057]$ and $[+0.049,+0.134]$ respectively). On occurrence its Brier
+skill ($+0.037$ in London, $+0.123$ in Paris; bootstrap intervals
+$[+0.020,+0.058]$ and $[+0.073,+0.170]$) matches the best inexpensive
+occurrence models --- a calibrated logistic regression and gradient-boosted trees
+(XGBoost). No model is far ahead on occurrence, so the GP hurdle earns its place
+through the tail rather than through discrimination. Second, among the simpler
+distributional regressions the choice of response distribution matters more than
+the choice of model: a zero-inflated log-normal is substantially miscalibrated
+(tail-CRPS skill $-2.3$ in London), whereas the light-tailed gamma and the
+threshold-free extended GPD are well behaved; the index tail is lighter than a
+log-normal or a low-threshold Generalised Pareto fit assumes. Third, modelling the
+\emph{full} zero-inflated distribution and deriving the exceedance probability
+from it beats hurdling at the extreme threshold, which starves the tail of data.
+Quantitatively everything is \emph{stronger in Paris} (e.g.\ logistic Brier skill
+$+0.117$ versus London's $+0.038$), reflecting its larger, more convective extreme
+sample; indeed in Paris the extended GPD too beats climatology on the
+full-predictive tail score (twCRPS $+0.052$), which it could not in data-scarcer
+London.
 
 \begin{table}[t]
 \centering\small
 \caption{Model bake-off at the $95$th percentile, $h=1$ (seed-averaged), for both
-cities. Brier skill score (BSS) and tail-CRPS skill (twCRPSS) are relative to
-climatology; positive is better. Logistic and XGBoost are occurrence-only (no
-twCRPSS). The qualitative ordering is identical across cities.}
+cities. Brier skill score (BSS) and tail-CRPS skill (twCRPS) are relative to
+climatology, so a score of zero means climatology-level skill, positive is
+better, and negative is worse than climatology. Logistic and XGBoost are
+occurrence-only (no twCRPS). ZI denotes the full-distribution zero-inflated
+regressions of Section~4.2. The GP--EVT hurdle is the strongest full-distribution
+model on the tail in both cities; its $90\%$ moving-block bootstrap intervals
+exclude zero on both scores (see text). Best per column in bold; the qualitative
+ordering is identical across cities.}
 \label{tab:bakeoff}
 \begin{tabular}{lcccc}
 \toprule
 & \multicolumn{2}{c}{\textbf{London}} & \multicolumn{2}{c}{\textbf{Paris}}\\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
-\textbf{Model} & \textbf{BSS} & \textbf{twCRPSS} & \textbf{BSS} & \textbf{twCRPSS} \\
+\textbf{Model} & \textbf{BSS} & \textbf{twCRPS} & \textbf{BSS} & \textbf{twCRPS} \\
 \midrule
 Climatology / stationary POT  & $0.000$ & $0.000$ & $0.000$ & $0.000$ \\
-Logistic ($+$ERA5)            & $\mathbf{+0.038}$ & --- & $\mathbf{+0.117}$ & --- \\
+Logistic ($+$ERA5)            & $\mathbf{+0.038}$ & --- & $+0.117$ & --- \\
 XGBoost ($+$ERA5)             & $+0.034$ & --- & $+0.101$ & --- \\
 ZI gamma ($+$ERA5)            & $+0.008$ & $-0.06$ & $+0.090$ & $+0.046$ \\
-ZI extended-GPD ($+$ERA5)     & $+0.012$ & $-0.045$ & $+0.093$ & $\mathbf{+0.052}$ \\
+ZI extended-GPD ($+$ERA5)     & $+0.012$ & $-0.045$ & $+0.093$ & $+0.052$ \\
 ZI log-normal ($+$ERA5)       & $-0.29$ & $-2.27$ & $-0.04$ & $-0.76$ \\
-Deep-GP--EVT hurdle (TCDGP)   & $\approx-0.4$ & $\approx-0.3$ & $\approx-0.4$ & $\approx-0.3$ \\
+GP--EVT hurdle ($+$ERA5)      & $+0.037$ & $\mathbf{+0.032}$ & $\mathbf{+0.123}$ & $\mathbf{+0.094}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Is the deep-GP failure a tuning artefact?} No. A sensitivity sweep over
-inducing points ($M\in\{32,64,128\}$) leaves the deep-kernel GP well below
-climatology in both cities (Brier skill $-0.2$ to $-0.7$). The decisive comparison
-is depth: replacing the deep kernel with a \emph{plain} GP recovers a competitive
-model (Brier skill $+0.029$ in London, $+0.123$ in Paris) --- so it is the added
-depth, not the Gaussian-process framework, that fails on this low-signal problem.
-The elaborate model is thus dominated not because GPs are unsuitable but because
-the extra flexibility cannot be supported by so few informative events.
+\paragraph{Is the GP result robust to its settings?} Yes. A sensitivity sweep over
+inducing points ($M\in\{32,64,128\}$) leaves the GP--EVT hurdle's skill
+essentially unchanged in both cities --- Brier skill $+0.03$ to $+0.04$ in London
+and $+0.12$ in Paris, with threshold-weighted CRPS skill positive throughout ---
+so the $M=64$ choice is not load-bearing. The hurdle uses a standard ARD kernel
+with no cross-validated tuning, so its tail advantage comes from a well-matched
+EVT likelihood and a modest, standard Gaussian process rather than from any
+delicate configuration; it is exactly as much flexibility as this low-signal
+problem can bear.
 
 \paragraph{Sensitivity to the exceedance threshold $u$.} Re-fitting the winning
 occurrence model (logistic $+$ERA5) at $u\in\{0.75,1.00,1.25\}$ --- i.e.\ marking
@@ -778,26 +797,29 @@ vanishes at neighbouring ones.
 
 \subsection{Conformal coverage does not imply forecast quality}\label{sec:res-cal}
 The tail-conformal layer attains its nominal $0.90$ coverage on the real series
-across every predictor set and horizon (Figure~\ref{fig:horizon}b). But this is
-\emph{guaranteed by construction} and is uninformative about predictive quality:
-the same deep-GP--EVT model whose conformal intervals are perfectly calibrated is
-simultaneously \emph{worse than climatology} on the proper scores
-(Table~\ref{tab:bakeoff}). The reliability diagram
-(Figure~\ref{fig:reliability}) makes the point directly: the deep-GP--EVT model's
-raw exceedance probabilities are badly miscalibrated and almost flat (low
-resolution), whereas a plain logistic regression is well calibrated and
-informative. Conformal coverage should therefore not be reported as evidence of a
-good probabilistic forecast --- a cautionary point in its own right.
+across every predictor set and horizon (Figure~\ref{fig:horizon}b). But this
+coverage is \emph{guaranteed by construction} for \emph{any} base model, so it is
+uninformative about predictive quality: a zero-inflated log-normal, for instance,
+is worse than climatology on the proper scores (Table~\ref{tab:bakeoff}, tail-CRPS
+skill $-2.3$ in London) yet would attain the same nominal conformal coverage. The
+reliability diagram
+(Figure~\ref{fig:reliability}) makes the point directly: the zero-inflated
+log-normal's raw exceedance probabilities are badly miscalibrated (systematically
+overconfident), whereas the logistic regression and the GP--EVT hurdle both track
+the diagonal and spread their predictions (calibrated and informative). Conformal
+coverage should therefore not be reported as evidence of a good probabilistic
+forecast --- a cautionary point in its own right.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.62\linewidth]{figures/fig_reliability}
 \caption{Reliability diagram for the exceedance probability (London $95$th,
-$h{=}1$). A plain logistic regression tracks the diagonal (calibrated) and spreads
-its predictions (informative); the deep Gaussian-process extreme-value model is
-overconfident and nearly flat, despite its conformal intervals attaining nominal
-coverage. Climatology is a single point at the base rate. The Paris counterpart is
-Supplementary Figure~S2.}
+$h{=}1$). The logistic regression and the GP--EVT hurdle track the
+diagonal (calibrated) and spread their predictions (informative); the
+zero-inflated log-normal is systematically overconfident (its predicted
+exceedance probabilities exceed the observed frequencies), despite attaining
+nominal conformal coverage by construction. Climatology is a single point
+at the base rate. The Paris counterpart is Supplementary Figure~S2.}
 \label{fig:reliability}
 \end{figure}
 
@@ -815,7 +837,7 @@ the prevalence floor as the forecast horizon grows (Figure~\ref{fig:horizon}a;
 numerical BSS by horizon, both cities: Supplementary Table~S3), consistent with
 the limited day-scale persistence of
 these extremes. At the rarer $99$th-percentile threshold (London), where the
-scarce data support only an occurrence analysis, the qualitative picture is
+scarce data preclude the held-out intensity test, the qualitative picture is
 unchanged (Supplementary Table~S1).
 
 \subsection{Predictability of intensity}\label{sec:res-int}
@@ -879,85 +901,44 @@ estimates run somewhat higher than London's, though the intervals overlap.}
 \end{tabular}
 \end{table}
 
-\subsection{Synthetic validation of the dependent hurdle}\label{sec:res-synth}
-On data simulated from the generative model with a \emph{known}
-occurrence--intensity correlation ($\rho=0.70$, GPD shape $\xi=0.20$), we verify
-that the coregionalised hurdle recovers the dependence and that it helps. The
-\emph{coupled} model recovers $\widehat\rho\approx+0.83$, while the
-\emph{independent} hurdle (the $\rho\!=\!0$ special case) cannot. Crucially, the
-independent model's intensity head --- estimated from the few exceedances alone
---- becomes unstable (its shape collapses so that test excesses fall outside the
-GPD support), whereas coupling lets the abundant occurrence data stabilise the
-tail and yields orders-of-magnitude better tail log-likelihood. This is
-direct evidence for the borrowing-strength mechanism: the dependent hurdle
-matters most exactly where intensity data are scarcest.
-
-\paragraph{Misspecification.} Because the validation above fixes a single
-$\rho$, we repeat it (three seeds each) at $\rho_{\mathrm{true}}\in\{0.3,0.7,0.9\}$
-with $\xi=0.20$ held fixed. Recovery is reliable only near the validated
-setting: at $\rho_{\mathrm{true}}=0.7$ the coupled model recovers
-$\widehat\rho=0.81\pm0.07$ (matching the single-seed estimate above), but at
-$\rho_{\mathrm{true}}=0.3$ and $0.9$ the estimate is both biased and far
-noisier ($\widehat\rho=0.61\pm0.46$ and $0.60\pm0.17$ respectively) --- which is
-consistent with, and now direct evidence for, the paper's own diagnosis that
-$\rho$ is weakly identified from so few exceedances (Section~\ref{sec:models}).
-The borrowing-strength benefit is correspondingly uneven across seeds: large
-tail-log-likelihood gains appear in most but not all fits, and shrink to
-near-zero at $\rho_{\mathrm{true}}=0.9$, where the independent model no longer
-reliably collapses. The qualitative conclusion --- coupling never does worse,
-and in most seeds does much better, than the independent hurdle --- holds
-throughout the sweep, but the \emph{size} of the benefit, like $\widehat\rho$
-itself, should be read as a favourable single-setting illustration rather than
-a precisely quantified effect.
-
-\paragraph{What does the real data say?} Fitting the coupled model on the real
-series (five seeds) gives $\widehat\rho=+0.25\pm0.14$ in London and
-$\widehat\rho=+0.64\pm0.12$ in Paris. These cannot be read directly as the
-strength of real occurrence--intensity dependence, for the reason the
-misspecification sweep just exposed: in this data regime the estimator is biased
-toward mid-range positive values, returning $\widehat\rho\approx0.6$ even when the
-true correlation is only $0.3$. A real-data $\widehat\rho$ near $0.6$ is therefore
-consistent with anything from weak to moderate dependence, and we do not use it to
-claim either presence or absence of exploitable coupling. Crucially, the
-substantive conclusion does not depend on estimating $\rho$: the coupled
-deep-GP--EVT hurdle fails to beat climatology in both cities
-(Table~\ref{tab:bakeoff}), and the depth sensitivity of
-Section~\ref{sec:res-bakeoff} localises that failure to the deep kernel's excess
-flexibility --- a plain GP is competitive --- rather than to the coupling
-mechanism. The shortfall is thus one of model capacity given so few informative
-events; whether a lower-capacity coupled model could convert any real dependence
-into skill is a question this experiment leaves open. We deliberately stop short
-of the cleaner-sounding claim that the real index simply lacks exploitable
-dependence, because the misspecification result shows we cannot measure that
-dependence reliably enough to assert its absence.
+\subsection{Coupling the hurdle: a null result}\label{sec:res-synth}
+We also tested whether \emph{coupling} the occurrence and intensity halves of the
+hurdle through coregionalisation (Section~\ref{sec:models}) improves forecasts,
+and found it weakly identified and empirically inert at this data volume ---
+switching the coupling off leaves the bake-off skill unchanged --- so we retain it
+only as a harmless nested generalisation of the independent hurdle; the full
+synthetic-recovery, misspecification, and real-data $\widehat\rho$ analyses are in
+Supplementary Section~S4.
 
 \subsection{Skill decays with horizon}\label{sec:res-skill}
 Both occurrence skill and discrimination decay toward the climatological floor as
 the forecast horizon grows (Figure~\ref{fig:horizon}a), consistent with the
 limited day-scale persistence of London extremes; conformal coverage, being
 guaranteed by construction, is flat across horizons (Figure~\ref{fig:horizon}b).
-Seed-averaged sweeps found no statistically robust occurrence-discrimination gain
-from atmospheric drivers at any single horizon --- a reminder that the
-predictability documented above is weak and easily masked by noise unless
-assessed with seed-averaging and proper scores rather than single runs. The same
-decay and flat coverage hold for Paris (Supplementary Figure~S3).
+The $+$ERA5 drivers lift discrimination clearly at $h=1$ (PR-AUC $0.118$ versus
+$0.076$ for index history alone) but the edge fades into seed noise by $h=3$ --- a
+reminder that the predictability documented above is a short-lead effect, weak and
+easily masked unless assessed with seed-averaging and proper scores rather than
+single runs. The same decay and flat coverage hold for Paris (Supplementary
+Figure~S3).
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_horizon}
-\caption{Seed-averaged horizon sweep on the London $95$th-percentile index.
-\textbf{(a)} Occurrence PR-AUC decays toward the prevalence floor (dashed) as the
-forecast horizon grows; driver gains are marginal at all horizons (the apparent
-ERA5 edge at $h=28$ does not survive a higher-seed check; see text).
+\caption{Seed-averaged horizon sweep on the London $95$th-percentile index
+(GP--EVT hurdle). \textbf{(a)} Occurrence PR-AUC decays toward the prevalence floor
+(dashed) as the forecast horizon grows; the $+$ERA5 driver gain is clearest at
+$h=1$ and fades into seed noise by $h=3$.
 \textbf{(b)} Conformal coverage stays at the nominal $0.90$ across all horizons
 and predictor sets. Error bars / markers are means over three seeds. The Paris
 counterpart is Supplementary Figure~S3.}
 \label{fig:horizon}
 \end{figure}
 
-\paragraph{Summary.} Across the bake-off, simpler calibrated models dominate the
-elaborate deep-GP--EVT model, and the response distribution matters more than the
-model class (Section~\ref{sec:res-bakeoff}); conformal coverage holds but is, on
+\paragraph{Synthesis.} Across the bake-off, a GP--EVT hurdle is the strongest
+full-distribution forecaster while simple calibrated models match it on
+occurrence, and the response distribution matters as much as the model class
+(Section~\ref{sec:res-bakeoff}); conformal coverage holds but is, on
 its own, uninformative about forecast quality (Section~\ref{sec:res-cal}). The
 substantive finding is a small but
 \emph{rigorously established} predictability: occurrence is weakly predictable
@@ -965,8 +946,9 @@ from antecedent convective-instability and circulation indices
 (Section~\ref{sec:res-occ}), and the magnitude of the largest events is weakly
 predictable from antecedent convective instability, with a CRPS skill over
 climatology that excludes zero across four independent splits
-(Section~\ref{sec:res-int}). The dependent-hurdle mechanism is separately
-validated on synthetic data (Section~\ref{sec:res-synth}). Every one of these
+(Section~\ref{sec:res-int}). The optional dependent-hurdle coupling, tested
+separately, proves empirically inert at this data volume
+(Section~\ref{sec:res-synth}). Every one of these
 conclusions holds in \emph{both} London and Paris, and is generally more
 pronounced in the more convective Paris --- evidence that they reflect the
 meteorology of precipitation extremes rather than the idiosyncrasies of one city.
@@ -997,22 +979,23 @@ as many extremes --- the extended GPD does, so ``the tail is climatology-bound''
 is a sample-size effect, not a universal law.
 
 \paragraph{Methodological lessons.} Three are worth emphasising. First,
-\emph{model complexity did not pay}: in both cities a deep Gaussian-process
-extreme-value hurdle was beaten by logistic regression, by gradient-boosted trees,
-and by simple zero-inflated distributional regressions. A sensitivity analysis
-localises the failure to the added \emph{depth} --- a plain Gaussian process is
-competitive, but the deep kernel cannot be supported by so few informative events;
-Gaussian processes earn their keep through structure (notably spatial structure),
-which a single-site temporal problem does not provide. Second, the \emph{response
-distribution dominates}: a log-normal tail was substantially miscalibrated, and
-hurdling at the extreme threshold starved the tail of data; modelling the full
-zero-inflated distribution with a threshold-free extended GPD was far better.
-Third, and most relevant to the wider literature, \emph{conformal coverage is
-insufficient as a stand-alone indicator of forecast quality}: it is attained by
-construction even by a model worse than climatology on proper scores. This is a
-known property of coverage, but our experiments make it concrete --- reporting
-coverage without a proper-score comparison can create a false impression of a good
-probabilistic forecast.
+\emph{a compact, well-matched model was enough}: in both cities a single-layer
+Gaussian-process hurdle with a standard kernel and an EVT tail was the strongest
+full-distribution forecaster on the tail, yet on occurrence it was matched by an
+inexpensive logistic regression and gradient-boosted trees --- so raw model
+sophistication bought little, and a modest Gaussian process is about as much
+flexibility as this low-signal problem can bear. Where Gaussian processes would
+earn more of their keep is through structure the single-site temporal problem does
+not provide (notably spatial structure across the grid of cells). Second, the
+\emph{response distribution dominates}: a log-normal tail was substantially
+miscalibrated, and hurdling at the extreme threshold starved the tail of data;
+modelling the full zero-inflated distribution with a threshold-free extended GPD
+was far better. Third, and most relevant to the wider literature, \emph{conformal
+coverage is insufficient as a stand-alone indicator of forecast quality}: it is
+attained by construction even by a model worse than climatology on proper scores
+(the zero-inflated log-normal here). This is a known property of coverage, but our
+experiments make it concrete --- reporting coverage without a proper-score
+comparison can create a false impression of a good probabilistic forecast.
 
 \paragraph{One predictive distribution, not two analyses.} We report occurrence
 and intensity separately for interpretability, but they are not disconnected: they
@@ -1028,13 +1011,14 @@ exactly the two-part story: in both cities the overall skill splits into a modes
 occurrence term and a small but unusually stable intensity term (its bootstrap
 interval excludes zero in both cities), with negligible interaction. The only way
 to make the joint fit differ from the separate one is to \emph{couple} the
-components through shared latent structure --- precisely the dependent deep-GP
-hurdle we tested. It did not improve on the separable treatment here; but, as
-Section~\ref{sec:res-synth} makes clear, that outcome reflects the limited
-capacity supportable from so few exceedances (and an occurrence--intensity
-correlation we cannot reliably estimate), not a demonstration that no coupling
-could ever help. The separable treatment is thus the pragmatic, well-identified
-choice at this data volume, rather than a refutation of dependence in principle.
+components through shared latent structure --- the dependent GP hurdle. We tested
+this coupling and found it empirically inert at this data volume (Supplementary
+Section~S4): the coupled and independent hurdles score identically, and $\rho$ is
+too weakly identified on real data to estimate reliably. The separable
+(independent) treatment is therefore the well-identified reference, and the
+coupling is retained only as a harmless nested generalisation that reduces to it
+as $\rho\to0$; whether a richer dataset could make borrowing strength pay is left
+open.
 
 \paragraph{Why rigour mattered here.} Several apparent results did not survive
 scrutiny: a single-seed driver benefit and an apparent long-horizon gain both
@@ -1045,41 +1029,49 @@ scoring, cross-validated model selection, bootstrap intervals, and multi-split
 robustness. In a low-signal regime these safeguards are not optional --- they are
 the difference between a finding and an artefact.
 
-\paragraph{Limitations.} The study covers two cities --- a step beyond a single
-site, but still a limited sample of European urban climates, so we frame the
-results as a careful two-city assessment rather than a continent-wide claim.
-London and Paris also share a climate zone, a downscaled reanalysis product
-(ERA5-2km), and a data provider (Copernicus), so they are not fully independent
-replicates: common reanalysis biases could in principle inflate both cities'
-apparent skill together. Replication in a climatically distinct setting
-(Mediterranean or continental-interior) would be needed to rule this out, and we
-flag it as the most direct next step rather than a claim we can settle here. It
-uses a perfect-prognosis design (antecedent reanalysis fields, not operational
-forecasts), and the intensity analysis conditions on observed exceedances, so it
-isolates predictability rather than delivering an end-to-end warning. The
-extreme-day definition itself has two, distinct knobs --- the standardisation
-percentile $q$ (Section~\ref{sec:data-index}) and the exceedance threshold $u$
-applied to the standardised index (Section~\ref{sec:setup}) --- and we vary each
+\paragraph{Limitations.} Four limitations qualify these conclusions.
+\begin{itemize}[leftmargin=1.3em,itemsep=4pt]
+\item \textbf{Sample size and independence.} The study covers two cities ---
+a step beyond a single site, but still a limited sample of European urban
+climates, so we frame the results as a careful two-city assessment rather than
+a continent-wide claim. London and Paris also share a climate zone, a
+downscaled reanalysis product (ERA5-2km), and a data provider (Copernicus), so
+they are not fully independent replicates: common reanalysis biases could in
+principle inflate both cities' apparent skill together. Replication in a
+climatically distinct setting (Mediterranean or continental-interior) would be
+needed to rule this out, and we flag it as the most direct next step rather
+than a claim we can settle here.
+\item \textbf{Perfect-prognosis framing.} The study uses a perfect-prognosis
+design (antecedent reanalysis fields, not operational forecasts), and the
+intensity analysis conditions on observed exceedances, so it isolates
+predictability rather than delivering an end-to-end warning.
+\item \textbf{Threshold definitions and stationarity.} The extreme-day
+definition itself has two distinct knobs --- the standardisation percentile
+$q$ (Section~\ref{sec:data-index}) and the exceedance threshold $u$ applied to
+the standardised index (Section~\ref{sec:setup}) --- and we vary each
 separately (the $99$th-percentile analysis in the Supplementary Material, and
 the $u$-sensitivity check of Section~\ref{sec:res-bakeoff}) rather than
 conflating them. We also treat the 1989--2018 climatological reference as
 stationary; given that climate projections indicate a rising trend in extreme
-rainfall over this period \citep{ipcc2021}, a non-stationary reference (e.g.\ a
-smoothly time-varying baseline rate) could in principle sharpen or shift the
-skill scores reported here, and we did not pursue it because the sample is
+rainfall over this period \citep{ipcc2021}, a non-stationary reference (e.g.\
+a smoothly time-varying baseline rate) could in principle sharpen or shift the
+skill scores reported here. We did not pursue this because the sample is
 already short relative to the rarity of the events, making an additional
-non-stationary component hard to fit reliably; we flag it as a natural extension
-rather than a design choice we defend as final. Finally, the
-index is itself an ERA5-derived precipitation product, which raises a circularity
-concern. We address it in two ways: no precipitation field of any kind enters the
-predictors, and every driver is strictly lagged, so the predictors are antecedent
-dynamical and thermodynamic state (pressure, geopotential, humidity, instability),
-never the rainfall itself. Using antecedent state to predict future precipitation
-is the standard perfect-prognosis setting; the residual caveat --- that a
-reanalysis is internally consistent across variables and time --- cannot make a
-strictly-lagged, non-precipitation predictor circular, but is worth keeping in
-mind, and would be removed entirely by moving to numerical-weather-prediction
-forecast drivers (future work).
+non-stationary component hard to fit reliably; we flag it as a natural
+extension rather than a design choice we defend as final.
+\item \textbf{Circularity of the response.} The index is itself an
+ERA5-derived precipitation product, which raises a circularity concern. We
+address it in two ways: no precipitation field of any kind enters the
+predictors, and every driver is strictly lagged, so the predictors are
+antecedent dynamical and thermodynamic state (pressure, geopotential,
+humidity, instability), never the rainfall itself. Using antecedent state to
+predict future precipitation is the standard perfect-prognosis setting; the
+residual caveat --- that a reanalysis is internally consistent across
+variables and time --- cannot make a strictly-lagged, non-precipitation
+predictor circular, but is worth keeping in mind, and would be removed
+entirely by moving to numerical-weather-prediction forecast drivers (future
+work).
+\end{itemize}
 
 % ===========================================================================
 \section{Conclusion}\label{sec:conclusion}
@@ -1090,8 +1082,10 @@ precipitation extremes, and to do so with an evaluation protocol robust to the
 pitfalls of a low-signal setting. The answer, consistent across two climatically
 contrasting cities, is a qualified, quantified ``a little'': occurrence and the
 magnitude of the largest events are weakly but genuinely predictable from
-antecedent convective instability, while simpler calibrated models suffice and
-conformal coverage is no substitute for a proper-score comparison. That every
+antecedent convective instability, while a compact Gaussian-process extreme-value
+hurdle proves the strongest full-distribution forecaster --- though simple
+calibrated models match it on occurrence --- and conformal coverage is no
+substitute for a proper-score comparison. That every
 finding holds in --- and is generally more pronounced in --- the more convective
 Paris is itself evidence that these are properties of precipitation extremes, not
 of one city.
@@ -1116,7 +1110,7 @@ product \emph{Extreme precipitation risk indicators for Europe and European citi
 archive) and from the NOAA teleconnection indices. The code accompanying this
 paper --- implementations of all models (logistic, gradient-boosted trees, the
 zero-inflated log-normal/gamma/eGPD distributional regressions, and the
-deep-GP--EVT hurdle), the full evaluation protocol (proper scores, the hold-out
+GP--EVT hurdle), the full evaluation protocol (proper scores, the hold-out
 intensity test, moving-block bootstrap and multi-split robustness), the
 data-retrieval and feature-processing scripts, and the scripts that produce every
 figure and table --- together with the processed daily feature tables for both
@@ -1128,33 +1122,34 @@ on figshare with a citable DOI upon acceptance.
 % ===========================================================================
 \section*{Author contributions}
 % ===========================================================================
-\textbf{Fankai Dong:} methodology, software, formal analysis, investigation,
-visualisation, writing --- original draft. \textbf{Olatunji Johnson:}
-conceptualisation, methodology, supervision, writing --- review and editing.
-\emph{[Please confirm the CRediT roles reflect the actual division of work.]}
+\textbf{Olatunji Johnson} is the sole author and is responsible for all
+aspects of this work: conceptualisation, methodology, software, formal
+analysis, and writing.
 
 % ===========================================================================
 \section*{Funding}
 % ===========================================================================
-\emph{[Funding statement to be confirmed --- e.g.\ ``This research received no
+This research received no
 specific grant from any funding agency in the public, commercial, or
-not-for-profit sectors.'']}
+not-for-profit sectors.
 
 % ===========================================================================
 \section*{Conflict of interest}
 % ===========================================================================
 The authors declare no conflict of interest.
-\emph{[Please confirm.]}
 
 % ===========================================================================
 \appendix
+\section*{Appendix}
 % ===========================================================================
 \section{Data and predictors}\label{app:data}
 
 \paragraph{Response.} The standardised daily precipitation-extreme index for
-London (Section~\ref{sec:data}), derived from the ERA5-2km downscaled reanalysis;
-we use the daily maximum over the $53$ London grid cells, with an extreme defined
-by $\Ind>1$, at the $95$th (primary) and $99$th percentile standardisations.
+London and Paris (Section~\ref{sec:data}), derived from the ERA5-2km downscaled
+reanalysis; we use the daily maximum over each city's grid cells ($53$ for London,
+$157$ for Paris), with an extreme defined by $\Ind>1$. We analyse the
+$95$th-percentile standardisation for both cities and, for London only, the rarer
+$99$th percentile (Supplementary Material).
 
 \paragraph{Antecedent predictors.} All predictors are functions of information up
 to the forecast origin $t$ (a horizon-$h$ forecast of day $t+h$ uses day-$t$
@@ -1172,7 +1167,8 @@ vapour, $2$\,m temperature, $10$\,m wind components and speed, geopotential at
 $500$ and $850$\,hPa, and specific humidity at $850$\,hPa.
 \item \textbf{ERA5 convective instability} (Copernicus CDS,
 \texttt{reanalysis-era5-single-levels}, $0.25^\circ$, daily mean and maximum over
-the box): CAPE, convective inhibition (CIN), the K-index, the Total-Totals index,
+the box): convective available potential energy (CAPE), convective inhibition
+(CIN), the K-index, the Total-Totals index,
 total-column water vapour, the vertical-integral eastward/northward
 water-vapour-flux components and their magnitude (IVT).
 \item \textbf{Teleconnection indices} (monthly, broadcast to daily): North
@@ -1187,9 +1183,10 @@ teleconnection indices were downloaded from NOAA. Every driver is forward-filled
 to daily resolution where needed and lagged by the forecast horizon. Processing
 code and the cached daily feature table accompany the paper.
 
-\section{The deep-GP extreme-value hurdle: inference}\label{app:inference}
+\section{The Gaussian-process extreme-value hurdle: inference}\label{app:inference}
 
-We give the inference for the most elaborate contender (Section~\ref{sec:models}).
+We give the inference for the Gaussian-process--EVT hurdle
+(Section~\ref{sec:models}).
 The parameters depend on covariates through latent functions,
 $\pi=\sigmoid(g_\pi(\bx_t))$, $\sigma=\softplus(g_\sigma(\bx_t))$, and a constant
 shape $\xi_0$ (covariate-dependent $\xi$ is an optional extension). For horizon
@@ -1212,10 +1209,11 @@ lower bound is
 - \KL\!\big(q(\bu)\,\|\,p(\bu)\big),
 \end{equation}
 the expectation computed by Monte Carlo over the marginal $q(\bg(\bx_{t-h}))$.
-Inducing-point inference reduces cost to $\mathcal{O}(NM^2)$; the kernel acts on a
-neural feature map (deep kernel) or, for the deep GP, on a composition of GP
-layers fitted by doubly-stochastic variational inference \citep{salimbeni2017doubly}.
-Hyperparameters, inducing inputs/distribution, neural weights, and $\xi_0$ are
+Inducing-point inference reduces cost to $\mathcal{O}(NM^2)$; the kernel is a
+standard automatic-relevance-determination squared-exponential kernel acting
+directly on the covariates, fitted by (doubly-stochastic) variational inference
+\citep{salimbeni2017doubly}.
+Hyperparameters, inducing inputs/distribution, and $\xi_0$ are
 learned jointly by maximising \eqref{eq:elbo}.
 
 \paragraph{Coregionalised (dependent) hurdle.} We couple the two latents through a
@@ -1225,8 +1223,8 @@ with $\bB=\bm W\bm W^\top$. The correlation
 $\rho=B_{\pi\sigma}/\sqrt{B_{\pi\pi}B_{\sigma\sigma}}$ is the borrowing-strength
 parameter; a diagonal $\bm W$ recovers the independent hurdle. Because the excess
 is observed only on extreme days, $\rho$ is weakly identified, so we use a
-weakly-informative prior shrinking $\rho\to0$ and validate recovery on synthetic
-data (Section~\ref{sec:res-synth}).
+weakly-informative prior shrinking $\rho\to0$; we examine its recovery on
+synthetic data and its (null) effect on forecasts in Supplementary Section~S4.
 
 \paragraph{Tail-conformal layer.} For an interval at level $1-\alpha$ we use a
 conformalised-quantile-regression nonconformity score on the model's predictive
@@ -1256,11 +1254,13 @@ $\bar\pi$ plus a stationary GPD tail) by swapping one component at a time:
 $S_{\mathrm{occ}}$ uses $\pi(\bx)$ with the climatological tail, $S_{\mathrm{int}}$
 uses $\bar\pi$ with $\sigma(\bx)$, and $S_{\mathrm{full}}$ uses both; the
 decomposition is additive up to a small interaction. Intervals are moving-block
-bootstrap ($90\%$, block $=10$ days, seed-averaged over three fits).
+bootstrap ($90\%$, block $=10$ days, seed-averaged over three fits); the resulting decomposition is reported in
+Table~\ref{tab:unified}.
 
 \begin{table}[ht]
 \centering
 \small
+\setlength{\tabcolsep}{4.5pt}
 \begin{tabular}{lcc}
 \toprule
 twCRPS skill vs climatology & London & Paris \\

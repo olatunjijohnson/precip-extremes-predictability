@@ -114,7 +114,7 @@ def section_C_misspecification(seeds=(1, 2, 3)):
             tlls = {}
             for coupled in (False, True):
                 torch.manual_seed(0)
-                m = TCDGP(d_in=Xtr.shape[1], u=1.0, M=48, Q=2, coupled=coupled, deep=True)
+                m = TCDGP(d_in=Xtr.shape[1], u=1.0, M=48, Q=2, coupled=coupled, deep=False)
                 m.fit(Xtr, data["O"][:ntr], data["excess"][:ntr], epochs=300, lr=0.02, verbose=False)
                 tlls[coupled] = _tail_loglik(m, Xte, O_te, exc_te)
                 if coupled:
@@ -127,7 +127,7 @@ def section_C_misspecification(seeds=(1, 2, 3)):
 
 def section_D_real_rho(seeds=range(5)):
     """Coupled-hurdle rho_hat on the real London/Paris series (multi-seed)."""
-    print("\n(D) REAL-DATA rho_hat  (coupled deep-GP-EVT hurdle, multi-seed)")
+    print("\n(D) REAL-DATA rho_hat  (coupled GP-EVT hurdle, multi-seed)")
     for city in CITIES:
         rp.set_city(city)
         csv = rp._csv_path()
@@ -138,7 +138,7 @@ def section_D_real_rho(seeds=range(5)):
         rhos = []
         for seed in seeds:
             torch.manual_seed(seed)
-            m = TCDGP(d_in=Xtr.shape[1], u=1.0, M=64, Q=2, coupled=True, deep=True)
+            m = TCDGP(d_in=Xtr.shape[1], u=1.0, M=64, Q=2, coupled=True, deep=False)
             m.fit(Xtr, data["O"][:cut], data["excess"][:cut], epochs=250, lr=0.02,
                   batch=1024, verbose=False)
             rhos.append(float(m.gp.rho()))

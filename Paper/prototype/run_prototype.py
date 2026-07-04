@@ -56,7 +56,7 @@ def synthetic_experiment():
         name = "coupled (dependent)" if coupled else "independent"
         print(f"\n-- {name} hurdle --")
         torch.manual_seed(0)
-        m = TCDGP(d_in=Xtr.shape[1], u=1.0, M=48, Q=2, coupled=coupled, deep=True)
+        m = TCDGP(d_in=Xtr.shape[1], u=1.0, M=48, Q=2, coupled=coupled, deep=False)
         m.fit(tr["X"], tr["O"], tr["excess"], epochs=300, lr=0.02, verbose=True)
         p = m.predict_params(te["X"])
         prauc = average_precision_score(te["O"].numpy(), p["pi"].numpy())
@@ -124,14 +124,14 @@ def real_experiment():
           f"recovered rho={m.gp.rho():+.3f}, xi={m.lik.xi().item():.3f}")
 
 
-def _fit_eval_real(csv, drivers, epochs, label, seed=0, horizon=1):
+def _fit_eval_real(csv, drivers, epochs, label, seed=0, horizon=1, deep=False):
     """Fit on London 95th with a given driver set; return a metrics row."""
     data, dates = load_real(csv, n_lags=14, u=1.0, horizon=horizon, drivers_df=drivers)
     cut = int((dates <= np.datetime64("2008-12-31")).sum())
     Xtr, Xte = standardize(data["X"][:cut], data["X"][cut:])
     O, I = data["O"], data["I"]
     torch.manual_seed(seed)
-    m = TCDGP(d_in=Xtr.shape[1], u=1.0, M=64, Q=2, coupled=True, deep=True)
+    m = TCDGP(d_in=Xtr.shape[1], u=1.0, M=64, Q=2, coupled=True, deep=deep)
     m.fit(Xtr, O[:cut], data["excess"][:cut], epochs=epochs, lr=0.02,
           batch=1024, verbose=False)
     ncal = int(0.2 * cut)
@@ -196,12 +196,12 @@ def calibration_eval(seeds=(0, 1, 2), epochs=250, u=1.0, save_npz="reliability.n
                      bdl["RES"], float("nan")))
         if name.startswith("+ERA5"):
             rel_curves["logistic+ERA5"] = ev.reliability_curve(O_te, p_lr)
-        # TCDGP, seed-averaged
+        # GP (plain-kernel) EVT hurdle, seed-averaged
         agg = {k: [] for k in ("BS", "BSS", "REL", "RES", "twss")}
         last_pi = None
         for s in seeds:
             torch.manual_seed(s)
-            m = TCDGP(d_in=Xtr.shape[1], u=u, M=64, Q=2, coupled=True, deep=True)
+            m = TCDGP(d_in=Xtr.shape[1], u=u, M=64, Q=2, coupled=True, deep=False)
             m.fit(Xtr, data["O"][:cut], data["excess"][:cut], epochs=epochs,
                   lr=0.02, batch=1024, verbose=False)
             p = m.predict_params(Xte)
@@ -212,10 +212,16 @@ def calibration_eval(seeds=(0, 1, 2), epochs=250, u=1.0, save_npz="reliability.n
             agg["REL"].append(bd["REL"]); agg["RES"].append(bd["RES"])
             agg["twss"].append(ev.skill(twm, tw_clim))
             last_pi = pi
-        rows.append((f"TCDGP [{name}]", np.mean(agg["BS"]), np.mean(agg["BSS"]),
+        rows.append((f"GP [{name}]", np.mean(agg["BS"]), np.mean(agg["BSS"]),
                      np.mean(agg["REL"]), np.mean(agg["RES"]), np.mean(agg["twss"])))
         if name.startswith("+ERA5"):
-            rel_curves["TCDGP+ERA5"] = ev.reliability_curve(O_te, last_pi)
+            rel_curves["GP+ERA5"] = ev.reliability_curve(O_te, last_pi)
+            # ZI log-normal: the miscalibrated exemplar for the reliability figure
+            torch.manual_seed(0)
+            zlm = ZIDistReg(Xtr.shape[1], dist="lognormal", u=u, deep=False)
+            zlm.fit(Xtr, data["I"][:cut], epochs=epochs, lr=0.05)
+            p_zln = np.asarray(zlm.p_exceed(Xte))
+            rel_curves["ZIlognormal+ERA5"] = ev.reliability_curve(O_te, p_zln)
 
     # --- report ---
     print(f"\n  Occurrence (Brier decomposition) + tail twCRPS skill vs climatology:")
@@ -591,13 +597,27 @@ def model_bakeoff(seeds=(0, 1, 2), epochs=600, u=1.0, deep=False):
                 bss.append(bd["BSS"]); res.append(bd["RES"]); twss.append(ev.skill(tw, tw_clim))
             rows.append((f"ZI-{dist[:6]} [{name[:5]}]", np.nan,
                          np.mean(bss), np.mean(res), np.mean(twss)))
+        # GP-EVT hurdle: deep kernel (TCDGP) and plain kernel (GP), same protocol
+        for glabel, gdeep in (("TCDGP", True), ("GP", False)):
+            bss, res, twss = [], [], []
+            for s in seeds:
+                torch.manual_seed(s)
+                m = TCDGP(d_in=Xtr.shape[1], u=u, M=64, Q=2, coupled=True, deep=gdeep)
+                m.fit(Xtr, data["O"][:cut], data["excess"][:cut], epochs=epochs,
+                      lr=0.02, batch=1024, verbose=False)
+                p = m.predict_params(Xte)
+                pi, sig, xi = p["pi"].numpy(), p["sigma"].numpy(), float(p["xi"])
+                bd = ev.brier_decomposition(O_te, pi)
+                twm = ev.twcrps_model(I_te, pi, sig, xi, u=u, tau=u, zmax=zmax)
+                bss.append(bd["BSS"]); res.append(bd["RES"]); twss.append(ev.skill(twm, tw_clim))
+            rows.append((f"{glabel} [{name[:5]}]", np.nan,
+                         np.mean(bss), np.mean(res), np.mean(twss)))
 
     print(f"\n  {'model':24s} {'BSS':>8s} {'RES(x1e3)':>10s} {'twCRPSS':>9s}")
     for n, bs, bss, res, tw in rows:
         tws = "   n/a" if (isinstance(tw, float) and np.isnan(tw)) else f"{tw:+.3f}"
         print(f"  {n:24s} {bss:+8.3f} {res*1e3:10.3f} {tws:>9s}")
-    print("\n  (BSS, twCRPSS > 0 beat climatology; RES = informativeness. "
-          "For reference TCDGP earlier: BSS ~ -0.4, twCRPSS ~ -0.3.)")
+    print("\n  (BSS, twCRPSS > 0 beat climatology; RES = informativeness.)")
 
 
 def unified_hurdle(seeds=(0, 1, 2), epochs=600, u=1.0, n_boot=2000):

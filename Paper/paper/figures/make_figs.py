@@ -14,7 +14,8 @@ plt.rcParams.update({"font.family": "serif", "axes.spines.top": False,
 d = np.load(os.path.join(PROTO, "reliability.npz"), allow_pickle=True)
 label_map = {"climatology": ("climatology", "crimson", "o"),
              "logistic+ERA5": ("logistic (+ERA5)", "#1b9e77", "s"),
-             "TCDGP+ERA5": ("deep-GP--EVT (TCDGP)", "#7570b3", "^")}
+             "GP+ERA5": ("GP--EVT hurdle", "#7570b3", "^"),
+             "ZIlognormal+ERA5": ("ZI log-normal", "#e6ab02", "d")}
 fig, ax = plt.subplots(figsize=(5.0, 4.6))
 ax.plot([0, 0.35], [0, 0.35], "k--", lw=0.8, label="perfect calibration")
 for k, (lab, col, mk) in label_map.items():
@@ -49,7 +50,7 @@ for d, off, col, lab in [(lon, +0.12, "#444444", "London"),
 ax.axvline(0, color="crimson", ls="--", lw=1.0)
 ax.set_yticks(base); ax.set_yticklabels(periods)
 ax.set_xlim(-0.01, 0.085)
-ax.set_xlabel("CRPS skill (excess) vs. climatology")
+ax.set_xlabel("CRPS-of-excess skill over climatology")
 ax.set_ylabel("test period")
 ax.set_title("Hold-out intensity predictability (90\\% moving-block bootstrap CI)")
 ax.legend(fontsize=8, frameon=False, loc="lower right")
