@@ -85,7 +85,8 @@ catastrophically miscalibrated where a threshold-free extended generalised Paret
 distribution is not; (ii) occurrence is weakly but genuinely predictable from
 antecedent convective instability and circulation; and (iii) the
 magnitude of the largest events is weakly but robustly predictable from
-convective instability (CAPE/CIN), with a CRPS skill over climatology excluding
+convective instability --- convective available potential energy (CAPE) and
+convective inhibition (CIN) --- with a CRPS skill over climatology excluding
 zero across four independent splits per city. The effects are small,
 statistically robust, and physically plausible; replication across two cities
 that share the same reanalysis source offers modest, not decisive, evidence
@@ -174,7 +175,8 @@ hurdle with conformal calibration.
 \begin{enumerate}[leftmargin=1.6em,itemsep=1pt]
   \item A \textbf{calibration-aware evaluation protocol} for rare-event
   precipitation forecasting: Brier reliability/resolution decomposition,
-  threshold- and quantile-weighted CRPS, skill scores against climatology,
+  threshold- and quantile-weighted continuous ranked probability score (CRPS),
+  skill scores against climatology,
   bootstrap confidence intervals, and multi-split robustness --- designed to
   resist the single-seed and quantile-selection artefacts that inflate apparent
   skill, and to demonstrate that conformal coverage is insufficient as a
@@ -183,7 +185,7 @@ hurdle with conformal calibration.
   contrasting cities}: occurrence of an extreme is weakly but genuinely
   predictable from antecedent state; and the \emph{magnitude} of the largest
   events carries weak but robust predictability tied to antecedent convective
-  instability (CAPE/CIN), with a CRPS skill over climatology whose moving-block
+  instability, with a CRPS skill over climatology whose moving-block
   bootstrap interval excludes zero across four independent train/test splits in
   each city --- and is stronger in the more convective Paris, consistent with a
   meteorological rather than a purely local origin (though two cities in one
@@ -194,7 +196,7 @@ hurdle with conformal calibration.
   inexpensive calibrated logistic regression and gradient-boosted trees --- while
   the choice of response distribution matters as much as model class (a
   zero-inflated log-normal is catastrophically miscalibrated where a threshold-free
-  extended GPD is well behaved), and conformal coverage, though attained by
+  extended generalised Pareto distribution is well behaved), and conformal coverage, though attained by
   construction, is insufficient on its own as a measure of forecast quality.
 \end{enumerate}
 
@@ -229,9 +231,9 @@ then state precisely how this study differs.
 \paragraph{Statistical modelling of precipitation extremes.}
 Extreme-value theory provides the asymptotic foundation for tail modelling. The
 peaks-over-threshold approach models exceedances above a high threshold by the
-Generalised Pareto distribution \citep{pickands1975,davison1990}, the framework
+Generalised Pareto distribution (GPD) \citep{pickands1975,davison1990}, the framework
 we adopt for the intensity component; the block-maxima approach uses the
-Generalised Extreme Value distribution \citep{coles2001evt}. EVT is widely
+Generalised Extreme Value (GEV) distribution \citep{coles2001evt}. EVT is widely
 applied in hydrology and climatology \citep{katz2002}, including non-stationary
 and spatial Bayesian formulations of precipitation extremes
 \citep{cooley2007}. This body of work is, however, predominantly
@@ -552,7 +554,7 @@ F_{t+h}(z) = p_0 + (1-p_0)\,F_+\!\big(z;\bm\theta(\bx_t)\big)\ (z>0),
 \qquad \pi_{t+h}=(1-p_0)\big(1-F_+(u)\big),
 \end{equation}
 with $p_0(\bx_t) = \mathrm{sigmoid}(\mathbf{w}_0^\top\bx_t)$ and the distribution parameters $\bm\theta(\bx_t) = \mathrm{link}(\mathbf{W}\bx_t)$ driven by linear predictors in $\bx_t$.
-The Generalised Pareto distribution (GPD) is
+The Generalised Pareto distribution is
 \begin{equation}\label{eq:gpd}
 H(y;\sigma,\xi) = 1-\left(1+\xi y/\sigma\right)_{+}^{-1/\xi}\ (\xi\neq0),\quad
 1-e^{-y/\sigma}\ (\xi=0),\quad y\ge0,
@@ -575,7 +577,7 @@ F_{t+h}(z) = (1-\pi_{t+h}) + \pi_{t+h}\,H(z-u;\sigma_{t+h},\xi),\qquad z>u,
 with $\pi_{t+h}=\sigmoid(g_\pi(\bx_t))$ and
 $\sigma_{t+h}=\softplus(g_\sigma(\bx_t))$ driven by latent functions $g_\pi,
 g_\sigma$ on which we place Gaussian-process priors --- a single-layer GP with a
-standard automatic-relevance-determination squared-exponential kernel acting
+standard automatic-relevance-determination (ARD) squared-exponential kernel acting
 directly on the covariates, fitted by sparse variational inference
 \citep{salimbeni2017doubly}. We refer to it as the \emph{GP--EVT hurdle}
 throughout (Table~\ref{tab:bakeoff}). A Gaussian-likelihood
@@ -675,7 +677,7 @@ calibrated-but-uninformative forecast (e.g.\ climatology) has zero resolution, s
 positive resolution with low reliability is the bar a useful model must clear.
 
 \paragraph{Whole distribution and tail: (tw)CRPS.} We score the predictive
-distribution with the continuous ranked probability score (CRPS) and its
+distribution with the CRPS and its
 threshold-weighted form (twCRPS) \citep{gneiting2011threshold},
 \begin{equation}\label{eq:twcrps}
 \mathrm{twCRPS}(F_{t+h},\Ind_{t+h})
@@ -1221,7 +1223,8 @@ lower bound is
 \mathcal{L} = \sum_t \E_{q(\bg(\bx_{t-h}))}\!\big[\log p(O_t,\Ind_t\mid\bg(\bx_{t-h}))\big]
 - \KL\!\big(q(\bu)\,\|\,p(\bu)\big),
 \end{equation}
-the expectation computed by Monte Carlo over the marginal $q(\bg(\bx_{t-h}))$.
+where $\KL$ is the Kullback--Leibler divergence and the expectation is
+computed by Monte Carlo over the marginal $q(\bg(\bx_{t-h}))$.
 Inducing-point inference reduces cost to $\mathcal{O}(NM^2)$; the kernel is a
 standard automatic-relevance-determination squared-exponential kernel acting
 directly on the covariates, fitted by (doubly-stochastic) variational inference

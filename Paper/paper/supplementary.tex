@@ -162,7 +162,8 @@ convective instability and the most recent index lag (\texttt{lag\_1}) are
 selected in essentially every subsample in both cities,
 consistent with the main text; day-of-year seasonality, integrated
 moisture/vapour-transport fields, the east--west mean-sea-level-pressure
-gradient, and the NAO index also recur near the top of both lists.
+gradient, and the North Atlantic Oscillation (NAO) index also recur near the top
+of both lists.
 
 \begin{table}[h]
 \centering\small
@@ -170,7 +171,10 @@ gradient, and the NAO index also recur near the top of both lists.
 frequency (top $15$ of $d=49$ features), $95$th percentile, $h=1$. Lags are
 days; \texttt{exc30} is the $30$-day exceedance count; \texttt{sin/cos\_doy}
 are seasonality harmonics; ``(mean)'' denotes the daily mean of an ERA5 field
-over the synoptic box.}
+over the synoptic box. Feature abbreviations follow the main paper
+(Section~3.3): IVT, integrated water-vapour transport; MSLP, mean sea-level
+pressure; NAO, North Atlantic Oscillation; the K-index is a convective-instability
+index.}
 \label{tab:supp-stability}
 \begin{tabular}{lc@{\qquad}lc}
 \toprule
@@ -276,9 +280,9 @@ $\widehat\rho=0.33\pm0.48$, $0.56\pm0.25$, and $0.79\pm0.05$ at
 $\rho_{\mathrm{true}}=0.3$, $0.7$, and $0.9$ respectively --- and the
 tail-log-likelihood gain from coupling is negligible at every setting. Crucially,
 unlike an over-parameterised base model whose independent intensity head can
-collapse (so that coupling appears to rescue it), the plain GP's independent hurdle
-is already stable: there is no instability for borrowing strength to cure, so the
-benefit coregionalisation is designed to provide does not materialise.
+collapse (so that coupling appears to rescue it), the single-layer GP hurdle used
+here is already stable: there is no instability for borrowing strength to cure, so
+the benefit coregionalisation is designed to provide does not materialise.
 
 \paragraph{Real-data estimates.} Fitting the coupled hurdle on the real series
 (five seeds) gives $\widehat\rho=+0.55\pm0.16$ in London and $+0.38\pm0.04$ in
