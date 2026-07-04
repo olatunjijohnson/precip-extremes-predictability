@@ -147,7 +147,20 @@ coverage guarantee \citep{coles2001evt,davison1990}. \emph{Flexible machine
 learning}, including deep models and Gaussian processes, captures non-linear
 dependence on atmospheric predictors and yields predictive distributions, but
 those distributions are typically miscalibrated in the tail and come with no
-guarantee \citep{galib2022deepextrema,lakshminarayanan2017}. Conformal prediction provides distribution-free, finite-sample coverage, but its standard form does not guarantee conditional or tail-specific coverage --- the effective resolution of very high quantiles is limited by the size of the calibration set --- and assumes exchangeability, which is generally violated in daily time series due to temporal dependence and non-stationarity \citep{gibbs2021adaptive,pasche2025extreme}. Moreover, many two-part (hurdle) forecasting approaches estimate occurrence and intensity in separate stages, so that inference about extremes relies primarily on the relatively small number of exceedances. This separation can limit the extent to which information contained in the abundant non-extreme data informs tail inference, particularly when common latent processes govern both occurrence and intensity.
+guarantee \citep{galib2022deepextrema,lakshminarayanan2017}. \emph{Conformal
+prediction} provides distribution-free, finite-sample coverage, but its standard
+form does not guarantee conditional or tail-specific coverage --- the effective
+resolution of very high quantiles is limited by the size of the calibration set
+--- and assumes exchangeability, which is generally violated in daily time series
+due to temporal dependence and non-stationarity
+\citep{gibbs2021adaptive,pasche2025extreme}.
+
+A further, orthogonal limitation cuts across these tools: many two-part (hurdle)
+forecasting approaches estimate occurrence and intensity in separate stages, so
+that inference about extremes relies primarily on the relatively small number of
+exceedances. This separation can limit the extent to which information contained
+in the abundant non-extreme data informs tail inference, particularly when common
+latent processes govern both occurrence and intensity.
 
 Rather than advocate a single model, we therefore ask a more basic pair of
 questions --- \emph{how predictable are these extremes, and how should that
