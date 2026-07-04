@@ -74,7 +74,8 @@ print("saved fig_data_paris.pdf")
 d = np.load(os.path.join(PROTO, "reliability_paris.npz"), allow_pickle=True)
 label_map = {"climatology": ("climatology", "crimson", "o"),
              "logistic+ERA5": ("logistic (+ERA5)", "#1b9e77", "s"),
-             "TCDGP+ERA5": ("deep-GP--EVT (TCDGP)", "#7570b3", "^")}
+             "GP+ERA5": ("GP--EVT hurdle", "#7570b3", "^"),
+             "ZIlognormal+ERA5": ("ZI log-normal", "#e6ab02", "d")}
 fig, ax = plt.subplots(figsize=(5.0, 4.6))
 ax.plot([0, 0.4], [0, 0.4], "k--", lw=0.8, label="perfect calibration")
 xmax = 0.32
