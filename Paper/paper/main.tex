@@ -794,7 +794,7 @@ and $+0.12$ in Paris, with threshold-weighted CRPS skill positive throughout ---
 so the $M=64$ choice is not load-bearing. The hurdle uses a standard ARD kernel
 with no cross-validated tuning, so its tail advantage comes from a well-matched
 EVT likelihood and a modest, standard Gaussian process rather than from any
-delicate configuration; it is exactly as much flexibility as this low-signal
+delicate configuration; it is about as flexible as this low-signal
 problem can bear.
 
 \paragraph{Sensitivity to the exceedance threshold $u$.} Re-fitting the winning
@@ -998,8 +998,8 @@ is a sample-size effect, not a universal law.
 Gaussian-process hurdle with a standard kernel and an EVT tail was the strongest
 full-distribution forecaster on the tail, yet on occurrence it was matched by an
 inexpensive logistic regression and gradient-boosted trees --- so raw model
-sophistication bought little, and a modest Gaussian process is about as much
-flexibility as this low-signal problem can bear. Where Gaussian processes would
+sophistication bought little, and a modest Gaussian process is about as
+flexible as this low-signal problem can bear. Where Gaussian processes would
 earn more of their keep is through structure the single-site temporal problem does
 not provide (notably spatial structure across the grid of cells). Second, the
 \emph{response distribution dominates}: a log-normal tail was substantially
@@ -1024,7 +1024,7 @@ additively into an occurrence and an intensity contribution. Fitting this unifie
 hurdle directly and scoring it end-to-end (Appendix~\ref{app:unified}) recovers
 exactly the two-part story: in both cities the overall skill splits into a modest
 occurrence term and a small but unusually stable intensity term (its bootstrap
-interval excludes zero in both cities), with negligible interaction. The only way
+interval excludes zero), with negligible interaction. The only way
 to make the joint fit differ from the separate one is to \emph{couple} the
 components through shared latent structure --- the dependent GP hurdle. We tested
 this coupling and found it empirically inert at this data volume (Supplementary
