@@ -1,9 +1,7 @@
-"""Paris supplementary figures (mirrors London Figs 1, 2, 4):
-   fig_data_paris.pdf, fig_reliability_paris.pdf, fig_horizon_paris.pdf.
-
-Inputs produced by prototype/_paris_supp.py:
-   prototype/reliability_paris.npz, prototype/horizon_paris.json
-and the Paris index CSV in data/.
+"""Paris supplementary EDA figure: fig_data_paris.pdf.
+(The Paris reliability and horizon panels now live in the MAIN paper, combined
+with London -- see make_figs.py and make_horizon_fig.py.)
+Input: the Paris index CSV in data/.
 """
 import os, json
 import numpy as np
@@ -70,61 +68,5 @@ plt.savefig(os.path.join(HERE, "fig_data_paris.pdf"), bbox_inches="tight")
 plt.close()
 print("saved fig_data_paris.pdf")
 
-# ===================================================== Fig 2: reliability (Paris)
-d = np.load(os.path.join(PROTO, "reliability_paris.npz"), allow_pickle=True)
-label_map = {"climatology": ("climatology", "crimson", "o"),
-             "logistic+ERA5": ("logistic (+ERA5)", "#1b9e77", "s"),
-             "GP+ERA5": ("GP--EVT hurdle", "#7570b3", "^"),
-             "ZIlognormal+ERA5": ("ZI log-normal", "#e6ab02", "d")}
-fig, ax = plt.subplots(figsize=(5.0, 4.6))
-ax.plot([0, 0.4], [0, 0.4], "k--", lw=0.8, label="perfect calibration")
-xmax = 0.32
-for k, (lab, col, mk) in label_map.items():
-    if k not in d:
-        continue
-    xs, ys, ns = [np.asarray(a, dtype=float) for a in d[k]]
-    ax.plot(xs, ys, mk + "-", color=col, ms=5, lw=1.3, label=lab)
-    xmax = max(xmax, float(xs.max()) * 1.1 if xs.size else xmax)
-ax.set_xlim(0, xmax); ax.set_ylim(0, xmax)
-ax.set_xlabel("mean predicted exceedance probability")
-ax.set_ylabel("observed exceedance frequency")
-ax.set_title("Reliability diagram (Paris 95th, $h{=}1$)")
-ax.legend(fontsize=8, frameon=False, loc="upper left")
-plt.tight_layout()
-plt.savefig(os.path.join(HERE, "fig_reliability_paris.pdf"), bbox_inches="tight")
-plt.close()
-print("saved fig_reliability_paris.pdf")
-
-# ======================================================== Fig 4: horizon (Paris)
-with open(os.path.join(PROTO, "horizon_paris.json")) as f:
-    hz = json.load(f)
-H = np.array(hz["H"])
-PRAUC, COV, PREV = hz["PRAUC"], hz["COV"], hz["PREV"]
-colors = {"index-only": "#444444", "+teleconnections": "#1b9e77", "+ERA5": "#7570b3"}
-order = ["index-only", "+teleconnections", "+ERA5"]
-
-fig, ax = plt.subplots(1, 2, figsize=(10, 3.8))
-for name in order:
-    if name not in PRAUC:
-        continue
-    m, s = PRAUC[name]
-    ax[0].errorbar(H, m, yerr=s, marker="o", ms=4, capsize=3, lw=1.4,
-                   color=colors[name], label=name)
-ax[0].axhline(PREV, ls="--", lw=0.9, color="crimson", label="prevalence")
-ax[0].set_xscale("log"); ax[0].set_xticks(H); ax[0].set_xticklabels(H)
-ax[0].set_xlabel("forecast horizon (days)"); ax[0].set_ylabel("occurrence PR-AUC")
-ax[0].set_title("(a) Skill decays toward prevalence"); ax[0].legend(fontsize=8, frameon=False)
-
-for name in order:
-    if name not in COV:
-        continue
-    ax[1].plot(H, COV[name], marker="s", ms=4, lw=1.4, color=colors[name], label=name)
-ax[1].axhline(0.90, ls="--", lw=0.9, color="black", label="nominal 0.90")
-ax[1].set_xscale("log"); ax[1].set_xticks(H); ax[1].set_xticklabels(H)
-ax[1].set_ylim(0.85, 0.95)
-ax[1].set_xlabel("forecast horizon (days)"); ax[1].set_ylabel("conformal coverage")
-ax[1].set_title("(b) Calibration holds at all horizons"); ax[1].legend(fontsize=8, frameon=False)
-plt.tight_layout()
-plt.savefig(os.path.join(HERE, "fig_horizon_paris.pdf"), bbox_inches="tight")
-plt.close()
-print("saved fig_horizon_paris.pdf")
+# NOTE: the Paris reliability and horizon panels now live in the MAIN paper
+# (combined with London in make_figs.py / make_horizon_fig.py).

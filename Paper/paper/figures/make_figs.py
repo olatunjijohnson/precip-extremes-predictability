@@ -10,28 +10,35 @@ PROTO = os.path.normpath(os.path.join(HERE, "..", "..", "prototype"))
 plt.rcParams.update({"font.family": "serif", "axes.spines.top": False,
                      "axes.spines.right": False, "figure.dpi": 150})
 
-# ---------------------------------------------------------------- reliability
-d = np.load(os.path.join(PROTO, "reliability.npz"), allow_pickle=True)
+# ------------------------------------------------- reliability (both cities)
 label_map = {"climatology": ("climatology", "crimson", "o"),
              "logistic+ERA5": ("logistic (+ERA5)", "#1b9e77", "s"),
              "GP+ERA5": ("GP--EVT hurdle", "#7570b3", "^"),
              "ZIlognormal+ERA5": ("ZI log-normal", "#e6ab02", "d")}
-fig, ax = plt.subplots(figsize=(5.0, 4.6))
-ax.plot([0, 0.35], [0, 0.35], "k--", lw=0.8, label="perfect calibration")
-for k, (lab, col, mk) in label_map.items():
-    if k not in d:
-        continue
-    xs, ys, ns = [np.asarray(a, dtype=float) for a in d[k]]
-    ax.plot(xs, ys, mk + "-", color=col, ms=5, lw=1.3, label=lab)
-ax.set_xlim(0, 0.32); ax.set_ylim(0, 0.32)
-ax.set_xlabel("mean predicted exceedance probability")
-ax.set_ylabel("observed exceedance frequency")
-ax.set_title("Reliability diagram (London 95th, $h{=}1$)")
-ax.legend(fontsize=8, frameon=False, loc="upper left")
+panels = [("London", "reliability.npz", 0.32), ("Paris", "reliability_paris.npz", None)]
+fig, ax = plt.subplots(1, 2, figsize=(10.0, 4.6))
+for j, (city, fn, xlim) in enumerate(panels):
+    a = ax[j]
+    d = np.load(os.path.join(PROTO, fn), allow_pickle=True)
+    xmax = 0.32
+    a.plot([0, 1], [0, 1], "k--", lw=0.8, label="perfect calibration")
+    for k, (lab, col, mk) in label_map.items():
+        if k not in d:
+            continue
+        xs, ys, ns = [np.asarray(v, dtype=float) for v in d[k]]
+        a.plot(xs, ys, mk + "-", color=col, ms=5, lw=1.3, label=lab)
+        if xs.size:
+            xmax = max(xmax, float(xs.max()) * 1.1)
+    xm = xlim if xlim is not None else xmax
+    a.set_xlim(0, xm); a.set_ylim(0, xm)
+    a.set_xlabel("mean predicted exceedance probability")
+    a.set_ylabel("observed exceedance frequency")
+    a.set_title(f"({'ab'[j]}) {city} ($95$th, $h{{=}}1$)")
+    a.legend(fontsize=8, frameon=False, loc="upper left")
 plt.tight_layout()
 plt.savefig(os.path.join(HERE, "fig_reliability.pdf"), bbox_inches="tight")
 plt.close()
-print("saved fig_reliability.pdf")
+print("saved fig_reliability.pdf (combined London + Paris)")
 
 # ---------------------------------------------------------------- intensity forest (two cities)
 periods = ["2003--2018", "2006--2018", "2009--2018", "2012--2018"]

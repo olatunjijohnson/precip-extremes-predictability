@@ -95,23 +95,18 @@ distributions (the zero-inflated log-normal) --- but
 with too few events to support the intensity analysis or to add to the main
 conclusions.
 
-\section{Paris: per-city diagnostic figures}
+\section{Paris: exploratory data figure}
 \label{sec:supp-paris}
 
-The main paper shows the data, calibration, and horizon-decay diagnostics
-(Figures~1, 2, and~4 there) for London as the representative city, while the
-core comparative results --- the bake-off, the held-out intensity analysis, and
-the unified hurdle --- are reported for both cities. For completeness we give the
-Paris counterparts of the three single-city diagnostic figures here. They are
-qualitatively identical to London: a zero-inflated, right-skewed, short-memory
-index with a summer convective peak (Figure~\ref{fig:data-paris}); well-calibrated
-exceedance probabilities from the simple logistic model and the GP--EVT
-hurdle, with the zero-inflated log-normal systematically overconfident
-(Figure~\ref{fig:reliability-paris});
-and occurrence skill decaying toward the prevalence floor with lead time while
-conformal coverage stays at the nominal level (Figure~\ref{fig:horizon-paris}).
-Paris differs from London only in having a higher extreme-day prevalence (a more
-convective regime), consistent with its stronger predictability in the main text.
+The main paper reports the reliability diagram (Figure~2) and the horizon sweep
+(Figure~4) for \emph{both} cities, alongside the bake-off, the held-out intensity
+analysis, and the unified hurdle. The one exploratory diagnostic shown only for
+London in the main text is the index characterisation (Figure~1); we give its
+Paris counterpart here (Figure~\ref{fig:data-paris}). It is qualitatively
+identical to London --- a zero-inflated, right-skewed, short-memory index with a
+summer convective peak --- differing only in a higher extreme-day prevalence (a
+more convective regime), consistent with Paris's stronger predictability in the
+main text.
 
 \begin{figure}[h]
 \centering
@@ -122,27 +117,6 @@ Figure~1 in the main paper). \textbf{(a)} Daily index with extreme days
 distribution; \textbf{(c)} summer-peaked seasonality of the extreme-day rate;
 \textbf{(d)} short memory of the extreme indicator.}
 \label{fig:data-paris}
-\end{figure}
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.62\linewidth]{fig_reliability_paris}
-\caption{Reliability diagram for the Paris exceedance probability ($95$th, $h=1$;
-Paris counterpart of Figure~2). The calibrated logistic model and the
-GP--EVT hurdle track the diagonal; the zero-inflated log-normal is systematically
-overconfident despite attaining nominal conformal coverage, mirroring London.}
-\label{fig:reliability-paris}
-\end{figure}
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=\linewidth]{fig_horizon_paris}
-\caption{Seed-averaged horizon sweep on the Paris $95$th-percentile index (Paris
-counterpart of Figure~4; GP--EVT hurdle). \textbf{(a)} Occurrence PR-AUC decays
-toward the prevalence floor (dashed) as the horizon grows, with the $+$ERA5 gain
-clearest at $h=1$; \textbf{(b)} conformal coverage holds at the nominal $0.90$
-across horizons and predictor sets. Markers are means over three seeds.}
-\label{fig:horizon-paris}
 \end{figure}
 
 \section{Feature importance and horizon-wise occurrence skill}
@@ -204,8 +178,8 @@ Table~\ref{tab:supp-horizon} gives the Brier skill score (relative to
 climatology) of the logistic $+$ERA5 occurrence model at each horizon of the
 sweep $h\in\{1,3,7,14,28\}$ (single fit per horizon; RES is the Brier
 resolution, $\times10^3$). This is the proper-score counterpart of the
-discrimination-only (PR-AUC) horizon figure in the main paper and
-Supplementary Figure~S3: in London, skill is effectively confined to $h=1$
+discrimination-only (PR-AUC) horizon figure (Figure~4 of the main paper, both
+cities): in London, skill is effectively confined to $h=1$
 and collapses toward zero by $h=3$; in Paris --- consistent with its larger,
 more convective sample --- skill remains small but positive out to $h=28$,
 though it decays steadily from its $h=1$ value.
