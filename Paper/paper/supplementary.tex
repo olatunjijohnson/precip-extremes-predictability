@@ -14,10 +14,9 @@
 \newcommand{\Ind}{\ensuremath{\mathcal{I}}}
 
 \title{\bfseries Supplementary Material\\[0.3em]
-\large How Predictable Are Rare Precipitation Extremes?
-A Calibration-Aware Assessment for London and Paris}
-\author{Olatunji Johnson}
-\date{\today}
+\large Supporting information for ``How Predictable Are Rare Precipitation Extremes?''}
+\author{Olatunji Johnson and Isqeel Ogunsola}
+\date{}
 
 \begin{document}
 \maketitle
@@ -95,23 +94,10 @@ distributions (the zero-inflated log-normal) --- but
 with too few events to support the intensity analysis or to add to the main
 conclusions.
 
-\section{Paris: per-city diagnostic figures}
+\section{Paris: exploratory data diagnostic}
 \label{sec:supp-paris}
 
-The main paper shows the data, calibration, and horizon-decay diagnostics
-(Figures~1, 2, and~4 there) for London as the representative city, while the
-core comparative results --- the bake-off, the held-out intensity analysis, and
-the unified hurdle --- are reported for both cities. For completeness we give the
-Paris counterparts of the three single-city diagnostic figures here. They are
-qualitatively identical to London: a zero-inflated, right-skewed, short-memory
-index with a summer convective peak (Figure~\ref{fig:data-paris}); well-calibrated
-exceedance probabilities from the simple logistic model and the GP--EVT
-hurdle, with the zero-inflated log-normal systematically overconfident
-(Figure~\ref{fig:reliability-paris});
-and occurrence skill decaying toward the prevalence floor with lead time while
-conformal coverage stays at the nominal level (Figure~\ref{fig:horizon-paris}).
-Paris differs from London only in having a higher extreme-day prevalence (a more
-convective regime), consistent with its stronger predictability in the main text.
+The calibration and horizon-decay diagnostics of the main paper (Figures~2 and~4 there) now show London and Paris side by side, and all core comparative results --- the bake-off, the held-out intensity analysis, and the unified hurdle --- are reported for both cities. The only single-city diagnostic that remains London-only in the main paper is the exploratory data figure (Figure~1); for completeness we give its Paris counterpart here (Figure~\ref{fig:data-paris}). It is qualitatively identical to London: a zero-inflated, right-skewed, short-memory index with a summer convective peak. Paris differs from London only in having a higher extreme-day prevalence (a more convective regime), consistent with its stronger predictability in the main text.
 
 \begin{figure}[h]
 \centering
@@ -124,26 +110,7 @@ distribution; \textbf{(c)} summer-peaked seasonality of the extreme-day rate;
 \label{fig:data-paris}
 \end{figure}
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.62\linewidth]{fig_reliability_paris}
-\caption{Reliability diagram for the Paris exceedance probability ($95$th, $h=1$;
-Paris counterpart of Figure~2). The calibrated logistic model and the
-GP--EVT hurdle track the diagonal; the zero-inflated log-normal is systematically
-overconfident despite attaining nominal conformal coverage, mirroring London.}
-\label{fig:reliability-paris}
-\end{figure}
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=\linewidth]{fig_horizon_paris}
-\caption{Seed-averaged horizon sweep on the Paris $95$th-percentile index (Paris
-counterpart of Figure~4; GP--EVT hurdle). \textbf{(a)} Occurrence PR-AUC decays
-toward the prevalence floor (dashed) as the horizon grows, with the $+$ERA5 gain
-clearest at $h=1$; \textbf{(b)} conformal coverage holds at the nominal $0.90$
-across horizons and predictor sets. Markers are means over three seeds.}
-\label{fig:horizon-paris}
-\end{figure}
 
 \section{Feature importance and horizon-wise occurrence skill}
 \label{sec:supp-features}
@@ -162,7 +129,8 @@ convective instability and the most recent index lag (\texttt{lag\_1}) are
 selected in essentially every subsample in both cities,
 consistent with the main text; day-of-year seasonality, integrated
 moisture/vapour-transport fields, the east--west mean-sea-level-pressure
-gradient, and the NAO index also recur near the top of both lists.
+gradient, and the North Atlantic Oscillation (NAO) index also recur near the top
+of both lists.
 
 \begin{table}[h]
 \centering\small
@@ -170,7 +138,10 @@ gradient, and the NAO index also recur near the top of both lists.
 frequency (top $15$ of $d=49$ features), $95$th percentile, $h=1$. Lags are
 days; \texttt{exc30} is the $30$-day exceedance count; \texttt{sin/cos\_doy}
 are seasonality harmonics; ``(mean)'' denotes the daily mean of an ERA5 field
-over the synoptic box.}
+over the synoptic box. Feature abbreviations follow the main paper
+(Section~3.3): IVT, integrated water-vapour transport; MSLP, mean sea-level
+pressure; NAO, North Atlantic Oscillation; the K-index is a convective-instability
+index.}
 \label{tab:supp-stability}
 \begin{tabular}{lc@{\qquad}lc}
 \toprule
@@ -200,8 +171,7 @@ Table~\ref{tab:supp-horizon} gives the Brier skill score (relative to
 climatology) of the logistic $+$ERA5 occurrence model at each horizon of the
 sweep $h\in\{1,3,7,14,28\}$ (single fit per horizon; RES is the Brier
 resolution, $\times10^3$). This is the proper-score counterpart of the
-discrimination-only (PR-AUC) horizon figure in the main paper and
-Supplementary Figure~S3: in London, skill is effectively confined to $h=1$
+discrimination-only (PR-AUC) horizon figure in the main paper (Figure~4): in London, skill is effectively confined to $h=1$
 and collapses toward zero by $h=3$; in Paris --- consistent with its larger,
 more convective sample --- skill remains small but positive out to $h=28$,
 though it decays steadily from its $h=1$ value.
@@ -244,17 +214,17 @@ generalisation of the independent hurdle, not as a source of skill.
 \paragraph{Coupling does not change forecast skill.} Re-fitting the
 $95$th-percentile bake-off model ($+$ERA5, $h=1$, seed-averaged over three seeds,
 $600$ epochs) with the coupling switched off is indistinguishable from the coupled
-fit on both proper scores (Table~\ref{tab:supp-couple}): the tail-CRPS and Brier
+fit on both proper scores (Table~\ref{tab:supp-couple}): the twCRPS and Brier
 skills are identical in London and marginally \emph{higher} without coupling in
-Paris. Whatever the GP--EVT hurdle achieves (Table~2 of the main paper), it does
-not owe to the coregionalisation.
+Paris. Whatever the GP--EVT hurdle achieves (Table~2 of the main paper), it owes
+nothing to the coregionalisation.
 
 \begin{table}[h]
 \centering\small
 \caption{Coupling neither helps nor hurts: bake-off skill of the GP--EVT hurdle at
 the $95$th percentile ($+$ERA5, $h=1$, seed-averaged), with the coregionalised
 coupling on (as in the main text) and off (an independent hurdle). Brier skill
-score (BSS) and tail-CRPS skill (twCRPS) are relative to climatology; positive is
+score (BSS) and twCRPS skill are relative to climatology; positive is
 better.}
 \label{tab:supp-couple}
 \begin{tabular}{lcccc}
@@ -276,9 +246,9 @@ $\widehat\rho=0.33\pm0.48$, $0.56\pm0.25$, and $0.79\pm0.05$ at
 $\rho_{\mathrm{true}}=0.3$, $0.7$, and $0.9$ respectively --- and the
 tail-log-likelihood gain from coupling is negligible at every setting. Crucially,
 unlike an over-parameterised base model whose independent intensity head can
-collapse (so that coupling appears to rescue it), the plain GP's independent hurdle
-is already stable: there is no instability for borrowing strength to cure, so the
-benefit coregionalisation is designed to provide does not materialise.
+collapse (so that coupling appears to rescue it), the single-layer GP hurdle used
+here is already stable: there is no instability for borrowing strength to cure, so
+the benefit coregionalisation is designed to provide does not materialise.
 
 \paragraph{Real-data estimates.} Fitting the coupled hurdle on the real series
 (five seeds) gives $\widehat\rho=+0.55\pm0.16$ in London and $+0.38\pm0.04$ in

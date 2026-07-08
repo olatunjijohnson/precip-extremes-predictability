@@ -6,7 +6,7 @@ account / queue.
 Two sources (default = WeatherBench2, much faster for regional extraction):
   * wb2  : WeatherBench2 ERA5 regridded to 240x121 (~1.5 deg), 6-hourly, 1959-2021.
            Small global footprint -> fast.  Has circulation + moisture fields,
-           but NOT CAPE or IVT (use the CDS route for those; see ../02_era5_data.md).
+           but NOT CAPE or IVT (use the CDS route, fetch_era5_cds.py, for those).
   * arco : full-res ARCO-ERA5 (0.25 deg, hourly).  Has CAPE + IVT, but its global
            chunking makes regional bulk extraction very slow.
 
