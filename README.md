@@ -1,55 +1,55 @@
 # How Predictable Are Rare Precipitation Extremes?
 
-Code, paper, and processed data for *"How Predictable Are Rare Precipitation
-Extremes? A Calibration-Aware Assessment for London"* (and Paris) — a rigorous,
-calibration-aware predictability assessment of daily precipitation extremes.
+### A calibration-aware assessment for London and Paris
 
-**Private working repository** (MSc Data Science extended project; supervisor
-Dr Olatunji Johnson, student Fankai Dong, University of Manchester).
+**Olatunji Johnson and Isqeel Ogunsola** — Department of Mathematics, University of Manchester, UK
+
+> **Status:** submitted to *Environmetrics* (2026).
+
+This repository contains the manuscript, supplementary material, and complete code
+for a study of how predictable rare daily precipitation extremes are, and how that
+predictability should be measured. Using thirty years (1989–2018) of a standardised
+precipitation-extreme index for London and Paris with strictly antecedent ERA5
+drivers, we assemble a calibration-aware evaluation protocol (proper scores, skill
+against climatology, bootstrap intervals, multi-split robustness) and run a bake-off
+from logistic regression to a Gaussian-process extreme-value hurdle.
+
+**Key findings.** A Gaussian-process extreme-value hurdle is the strongest
+full-distribution forecaster on the tail, while simple calibrated models match it on
+occurrence, and the choice of response distribution matters as much as model class.
+Occurrence and the magnitude of the largest events are weakly but genuinely
+predictable from antecedent convective instability (CAPE/CIN), with a CRPS skill over
+climatology that excludes zero across four independent splits in each city. Conformal
+coverage, though guaranteed by construction, is shown to be insufficient on its own as
+a measure of forecast quality.
 
 ## Layout
+
 ```
 Paper/
-  paper/            # manuscript: main.tex, supplementary.tex, references.bib, figures/
-  prototype/        # all code (models, evaluation, data-fetch, figure scripts)
-  *.md              # planning, method, results, and revision notes
-data/               # processed precipitation-extreme indices (London, Paris)
+  paper/        manuscript: main.tex, supplementary.tex, references.bib, figures/
+  prototype/    code: models, evaluation, data retrieval, figure/table generators
+data/           processed precipitation-extreme indices (London, Paris)
 ```
 
-## Code (`Paper/prototype/`)
-| file | role |
-|------|------|
-| `tcdgp.py` | deep-GP–EVT hurdle (coregionalised sparse variational GP) |
-| `distreg.py` | zero-inflated distributional regression (log-normal / gamma / eGPD) |
-| `evaluation.py` | proper scores: Brier decomposition, (tw)CRPS, skill scores |
-| `conformal.py` | tail-targeted + adaptive conformal calibration |
-| `data.py` | index loader (horizon-aware, leakage-safe) + driver merge |
-| `run_prototype.py` | all experiments: bake-off, feature screen (FDR), intensity tests (block bootstrap, multi-split), stability selection, GP sensitivity, horizon sweep, synthetic validation |
-| `fetch_*.py` | data retrieval (city index, ERA5 WeatherBench2, ERA5 CDS, teleconnections) |
-
-## Data
-- **Indices** (`data/*_precip_extreme_index_*.csv`): the standardised
-  precipitation-extreme index, daily 1989–2018, derived from the Copernicus CDS
-  product *Extreme precipitation risk indicators for European cities*
-  (`sis-european-risk-extreme-precipitation-indicators`). Reproduce with
-  `prototype/fetch_city_index.py`.
-- **Processed ERA5 driver tables** (`prototype/era5_*.parquet`,
-  `teleconnections_daily.csv`): antecedent atmospheric predictors. Reproduce
-  with `prototype/fetch_era5_*.py`.
-- The raw 376 MB Copernicus netCDF archive is **not** committed; download from
-  the CDS source above.
+See `Paper/prototype/README.md` for a file-by-file guide to the code.
 
 ## Reproduce
+
 ```bash
 cd Paper/prototype
 pip install torch numpy pandas scipy scikit-learn xgboost
-python3 run_prototype.py          # full experiment suite (London)
+python3 run_prototype.py          # main experiments (CPU is fine; a few minutes)
+python3 revision_analyses.py all  # supplementary analyses
+cd ../paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
 ```
-Atmospheric-driver fetching needs `xarray zarr gcsfs dask cdsapi` and a
-Copernicus CDS account (`~/.cdsapirc`); see `Paper/02_era5_data.md`.
 
-## Build the paper
-```bash
-cd Paper/paper
-pdflatex main && bibtex main && pdflatex main && pdflatex main
-```
+## Data availability
+
+The processed daily precipitation-extreme indices (`data/`) and the antecedent
+feature tables (`Paper/prototype/`) are derived from public-domain resources: the
+Copernicus Climate Data Store *Extreme precipitation risk indicators for Europe and
+European cities (1950–2019)* (https://cds.climate.copernicus.eu); ERA5 reanalysis
+(Copernicus CDS `reanalysis-era5-single-levels`) and the WeatherBench2 regridded ERA5
+archive (https://weatherbench2.readthedocs.io); and the NOAA teleconnection indices
+(NOAA CPC/PSL, https://www.cpc.ncep.noaa.gov).
