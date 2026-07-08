@@ -14,10 +14,9 @@
 \newcommand{\Ind}{\ensuremath{\mathcal{I}}}
 
 \title{\bfseries Supplementary Material\\[0.3em]
-\large How Predictable Are Rare Precipitation Extremes?
-A Calibration-Aware Assessment for London and Paris}
-\author{Olatunji Johnson}
-\date{\today}
+\large Supporting information for ``How Predictable Are Rare Precipitation Extremes?''}
+\author{Olatunji Johnson and Isqeel Ogunsola}
+\date{}
 
 \begin{document}
 \maketitle
@@ -95,18 +94,10 @@ distributions (the zero-inflated log-normal) --- but
 with too few events to support the intensity analysis or to add to the main
 conclusions.
 
-\section{Paris: exploratory data figure}
+\section{Paris: exploratory data diagnostic}
 \label{sec:supp-paris}
 
-The main paper reports the reliability diagram (Figure~2) and the horizon sweep
-(Figure~4) for \emph{both} cities, alongside the bake-off, the held-out intensity
-analysis, and the unified hurdle. The one exploratory diagnostic shown only for
-London in the main text is the index characterisation (Figure~1); we give its
-Paris counterpart here (Figure~\ref{fig:data-paris}). It is qualitatively
-identical to London --- a zero-inflated, right-skewed, short-memory index with a
-summer convective peak --- differing only in a higher extreme-day prevalence (a
-more convective regime), consistent with Paris's stronger predictability in the
-main text.
+The calibration and horizon-decay diagnostics of the main paper (Figures~2 and~4 there) now show London and Paris side by side, and all core comparative results --- the bake-off, the held-out intensity analysis, and the unified hurdle --- are reported for both cities. The only single-city diagnostic that remains London-only in the main paper is the exploratory data figure (Figure~1); for completeness we give its Paris counterpart here (Figure~\ref{fig:data-paris}). It is qualitatively identical to London: a zero-inflated, right-skewed, short-memory index with a summer convective peak. Paris differs from London only in having a higher extreme-day prevalence (a more convective regime), consistent with its stronger predictability in the main text.
 
 \begin{figure}[h]
 \centering
@@ -118,6 +109,8 @@ distribution; \textbf{(c)} summer-peaked seasonality of the extreme-day rate;
 \textbf{(d)} short memory of the extreme indicator.}
 \label{fig:data-paris}
 \end{figure}
+
+
 
 \section{Feature importance and horizon-wise occurrence skill}
 \label{sec:supp-features}
@@ -178,8 +171,7 @@ Table~\ref{tab:supp-horizon} gives the Brier skill score (relative to
 climatology) of the logistic $+$ERA5 occurrence model at each horizon of the
 sweep $h\in\{1,3,7,14,28\}$ (single fit per horizon; RES is the Brier
 resolution, $\times10^3$). This is the proper-score counterpart of the
-discrimination-only (PR-AUC) horizon figure (Figure~4 of the main paper, both
-cities): in London, skill is effectively confined to $h=1$
+discrimination-only (PR-AUC) horizon figure in the main paper (Figure~4): in London, skill is effectively confined to $h=1$
 and collapses toward zero by $h=3$; in Paris --- consistent with its larger,
 more convective sample --- skill remains small but positive out to $h=28$,
 though it decays steadily from its $h=1$ value.
@@ -222,7 +214,7 @@ generalisation of the independent hurdle, not as a source of skill.
 \paragraph{Coupling does not change forecast skill.} Re-fitting the
 $95$th-percentile bake-off model ($+$ERA5, $h=1$, seed-averaged over three seeds,
 $600$ epochs) with the coupling switched off is indistinguishable from the coupled
-fit on both proper scores (Table~\ref{tab:supp-couple}): the tail-CRPS and Brier
+fit on both proper scores (Table~\ref{tab:supp-couple}): the twCRPS and Brier
 skills are identical in London and marginally \emph{higher} without coupling in
 Paris. Whatever the GP--EVT hurdle achieves (Table~2 of the main paper), it owes
 nothing to the coregionalisation.
@@ -232,7 +224,7 @@ nothing to the coregionalisation.
 \caption{Coupling neither helps nor hurts: bake-off skill of the GP--EVT hurdle at
 the $95$th percentile ($+$ERA5, $h=1$, seed-averaged), with the coregionalised
 coupling on (as in the main text) and off (an independent hurdle). Brier skill
-score (BSS) and tail-CRPS skill (twCRPS) are relative to climatology; positive is
+score (BSS) and twCRPS skill are relative to climatology; positive is
 better.}
 \label{tab:supp-couple}
 \begin{tabular}{lcccc}

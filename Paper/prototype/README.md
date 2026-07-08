@@ -1,71 +1,52 @@
-# Accompanying code — "How Predictable Are Rare Precipitation Extremes?"
+# Accompanying code — *How Predictable Are Rare Precipitation Extremes?*
 
-This is the code package for the paper (`../paper/main.tex`): all models, the
-evaluation protocol, the data-retrieval/processing scripts, and the figure/table
-generators. Self-contained PyTorch + scikit-learn — **no gpytorch needed**.
+Code package for the paper (`../paper/main.tex`): all models, the evaluation
+protocol, the data-retrieval/processing scripts, and the figure/table generators.
+Self-contained PyTorch + scikit-learn — **no gpytorch needed**.
 
-## Files
+## Core modules
 | file | contents |
 |------|----------|
-| `tcdgp.py`    | the deep-GP–EVT hurdle: `FeatureExtractor` (deep kernel), `RBFKernel`, `CoregSVGP` (coregionalised sparse variational GP), `HurdleGPD` likelihood, `TCDGP`. |
-| `distreg.py`  | zero-inflated distributional regression: log-normal, gamma, and **eGPD** positive parts (the models that win the bake-off). |
+| `tcdgp.py`    | the **GP–EVT hurdle** (`TCDGP`): a coregionalised sparse variational Gaussian process with a Generalised-Pareto hurdle likelihood (`RBFKernel`, `CoregSVGP`, `HurdleGPD`). The paper uses the plain single-layer variant (`deep=False`); a deep-kernel option (`deep=True`) is available and reported only as a depth ablation. |
+| `distreg.py`  | zero-inflated distributional regressions: log-normal, gamma, and **eGPD** positive parts. |
 | `evaluation.py`| proper scores: Brier reliability/resolution decomposition, (tw)CRPS, CRPS-from-CDF, climatology/POT references, skill scores. |
 | `conformal.py`| `split_conformal_upper` (+ GPD score-extrapolation) and `adaptive_conformal` (ACI). |
 | `data.py`     | `load_real` (index + antecedent features, horizon-aware, leakage-safe), `load_drivers`, `make_synthetic`. |
-| `teleconnections.py` | fetch/parse NAO, AO, Niño3.4 (NOAA). |
-| `fetch_era5_arco.py` | fetch ERA5 circulation/moisture from WeatherBench2 zarr. |
-| `fetch_era5_cds.py`  | fetch ERA5 convective-instability fields (CAPE/CIN/K-index/Total-Totals/IVT) from the Copernicus CDS. |
-| `run_prototype.py` | all experiments: `model_bakeoff`, `calibration_eval`, `feature_screen`, `intensity_test`, `intensity_firmup`, `intensity_multisplit`, `driver_ablation`, `horizon_sweep`, synthetic validation. |
-| `revision_analyses.py` | the additional analyses added during revision: (A) threshold-`u` sensitivity, (B) bootstrap block-size sensitivity, (C) synthetic dependent-hurdle misspecification, (D) real-data occurrence–intensity `ρ̂`, (E) feature-importance table (Supp. Table S2), (F) horizon-wise BSS table (Supp. Table S3). |
-| `../paper/figures/*.py` | scripts that produce every figure in the paper. |
+
+## Experiment drivers
+| file | contents |
+|------|----------|
+| `run_prototype.py` | the main experiments: `model_bakeoff` (Table 2), `calibration_eval` (reliability diagrams), `feature_screen`, `intensity_test`/`intensity_firmup`/`intensity_multisplit` (hold-out intensity), `driver_ablation`, `horizon_sweep`. Set the city with `set_city("london"|"paris")`. |
+| `revision_analyses.py` | supplementary analyses: (A) threshold-`u` sensitivity, (B) bootstrap block-size, (C) synthetic coupling recovery, (D) real-data `ρ̂`, (E) feature-importance table (Table S2), (F) horizon-wise BSS table (Table S3), (G) 99th-percentile bake-off (Table S1). |
+| `compute_gp_confidence_intervals.py` | moving-block bootstrap CIs for the GP–EVT hurdle's BSS/twCRPS (both cities). |
+| `compare_coupled_vs_independent.py`  | coupled vs independent GP–EVT hurdle (Supplementary S4 — coupling is empirically inert). |
+| `generate_horizon_json.py` | seed-averaged horizon sweep for both cities → `horizon_london.json`, `horizon_paris.json` (inputs to the horizon figure). |
+
+## Data-retrieval scripts
+| file | contents |
+|------|----------|
+| `teleconnections.py` | fetch/parse NAO, AO, Niño-3.4 (NOAA) → `teleconnections_daily.csv`. |
+| `fetch_era5_arco.py` | ERA5 circulation/moisture from the WeatherBench2 zarr archive. |
+| `fetch_era5_cds.py`  | ERA5 convective-instability fields (CAPE/CIN/K-index/Total-Totals/IVT) from the Copernicus CDS. |
+| `fetch_city_index.py`| retrieve the city precipitation-extreme index. |
+
+Figures are produced by `../paper/figures/*.py`. The cached inputs they read
+(`reliability*.npz`, `horizon_*.json`, the ERA5 `*.parquet`, `teleconnections_daily.csv`)
+are included here, so the figures rebuild without re-running the full pipeline.
 
 ## Run
 ```bash
-pip install torch numpy pandas scipy scikit-learn
-python3 run_prototype.py            # CPU is fine; ~2–4 min
-python3 revision_analyses.py all    # reproduces the revision numbers; A/B/E/F are fast, C/D take a few min each
+pip install torch numpy pandas scipy scikit-learn xgboost
+python3 run_prototype.py            # CPU is fine; a few minutes
+python3 revision_analyses.py all    # supplementary numbers (C/D take a few min each)
 ```
 
-## What it demonstrates (validated)
-**(1) Synthetic — borrowing strength.** Data generated with true ρ = 0.70.
-- The **coupled** (dependent) hurdle recovers **ρ ≈ +0.8**; the independent
-  model is fixed at 0.
-- Tail log-likelihood improves dramatically from the **independent** model
-  (whose tail estimate is unstable with few exceedances) to the **coupled**
-  model — the borrowing-strength effect the paper claims (ablation #6).
-
-**(2) Real — calibration.** London 95th-percentile index, train 1989–2008 /
-test 2009–2018:
-- ELBO converges; split-conformal and ACI both give **≈0.90 coverage at the
-  0.90 target** (near-nominal).
-- Occurrence PR-AUC sits just above the prevalence baseline — expected with
-  index-only features and *no ERA5 yet* (adding the antecedent ERA5 drivers from
-  `../02_era5_data.md` is the next lever).
-
-> Numbers vary slightly by seed/hardware; exact figures from one run are logged
-> in `../04_prototype_results.md`.
-
-## Fetching the atmospheric drivers
+## Fetching the atmospheric drivers (optional — cached copies are included)
 ```bash
-python3 teleconnections.py        # NAO/AO/ENSO -> teleconnections_daily.csv (no account)
-pip install xarray zarr gcsfs dask scikit-learn pyarrow
-python3 fetch_era5_arco.py --test                 # 1-month check (ARCO cloud zarr)
-python3 fetch_era5_arco.py --start 1989-01-01 --end 2018-12-31 \
-        --out era5_london_daily.parquet
+python3 teleconnections.py          # NAO/AO/ENSO (no account needed)
+pip install xarray zarr gcsfs dask pyarrow cdsapi
+python3 fetch_era5_arco.py --start 1989-01-01 --end 2018-12-31 --out era5_london_daily.parquet
+python3 fetch_era5_cds.py           # needs a Copernicus CDS API key
 ```
-`run_prototype.py` auto-detects `era5_london_daily.parquet` and
-`teleconnections_daily.csv` here and attaches them (lagged, antecedent); otherwise
-it runs index-only. See `../02_era5_data.md` for both access routes.
-
-## Status / next steps (this is a prototype, not the final model)
-- [x] ERA5 + teleconnection fetch tooling (`fetch_era5_arco.py`, `teleconnections.py`);
-      run them where you have internet, then re-run the prototype.
-- [ ] Bulk distribution `F_blw` for full-distribution scoring (twCRPS over the
-      whole line); currently the tail/occurrence are modelled, bulk is a crude
-      placeholder in `predictive_cdf`.
-- [ ] Minibatched natural-gradient / longer training; inducing-point init by
-      k-means; ARD pruning.
-- [ ] 2-layer deep GP variant (currently deep **kernel**) for the depth ablation.
-- [ ] Full metric suite (twCRPS, reliability, BSS/CRPSS) + baselines wired to
-      the experiment plan in `../01_method_and_experiments.md`.
-- [ ] Appendix-grade proof for Proposition 1 (coverage).
+`run_prototype.py` auto-detects the driver files here and attaches them
+(strictly lagged / antecedent); otherwise it runs index-only.
