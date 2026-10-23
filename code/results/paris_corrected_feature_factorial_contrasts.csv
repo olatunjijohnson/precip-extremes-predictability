@@ -1,0 +1,6 @@
+city,contrast,gain,ci_low,ci_high
+paris,linear occurrence added to seasonal intensity,0.043501821931421714,0.008836428620351413,0.07410984544615035
+paris,linear intensity added with occurrence fixed,-0.0023171492836346307,-0.017323960523036912,0.010546389989630442
+paris,GP occurrence replacing linear occurrence; intensity fixed linear,0.019394851209884528,0.005298893026626936,0.03388796305782173
+paris,GP intensity replacing linear intensity; occurrence fixed linear,0.010199421060408265,-2.057780859326802e-05,0.021382769077493573
+paris,complete GP minus complete linear,0.021932842409845527,0.003347748744580098,0.03998611511792104

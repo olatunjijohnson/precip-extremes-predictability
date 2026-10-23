@@ -1,0 +1,4 @@
+city,calculation,mean_twCRPS
+london,mean of seed plug-in scores,0.017925568168448064
+london,mixture of seed plug-in CDFs,0.017902924140344455
+london,mixture over posterior draws and seeds,0.017901174313394407

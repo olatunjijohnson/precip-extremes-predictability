@@ -1,0 +1,4 @@
+city,calculation,mean_twCRPS
+paris,mean of seed plug-in scores,0.046767219646504474
+paris,mixture of seed plug-in CDFs,0.046702501737602584
+paris,mixture over posterior draws and seeds,0.04665948419095572

@@ -1,0 +1,23 @@
+{
+  "occurrence_lambdas": [
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0,
+    10000.0
+  ],
+  "tail_lambdas": [
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0
+  ],
+  "n_boot": 2000,
+  "bootstrap_interval": "percentile 95%",
+  "main_split": "1989-2008 train; 2009-2018 test"
+}

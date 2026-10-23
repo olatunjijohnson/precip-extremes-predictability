@@ -1,0 +1,7 @@
+city,model,mean_twCRPS,twCRPSS_vs_seasonal
+london,seasonal occurrence + seasonal intensity,0.01818999183845087,0.0
+london,linear occurrence + seasonal intensity,0.0178466302488192,0.018876401522394115
+london,linear occurrence + linear intensity,0.017838746128967905,0.019309833264492537
+london,GP occurrence + linear intensity,0.01789258442949848,0.016350057305892562
+london,linear occurrence + GP intensity,0.01785131253538868,0.01861899148004431
+london,GP occurrence + GP intensity,0.017925568168448064,0.014536766830420156

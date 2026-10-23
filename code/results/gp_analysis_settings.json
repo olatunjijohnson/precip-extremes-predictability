@@ -1,0 +1,18 @@
+{
+  "main_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "sensitivity_seeds": [
+    0,
+    1,
+    2
+  ],
+  "epochs": 600,
+  "batch": 1024,
+  "learning_rate": 0.02,
+  "posterior_draws_saved_per_seed": 40
+}

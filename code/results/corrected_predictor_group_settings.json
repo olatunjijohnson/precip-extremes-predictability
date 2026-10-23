@@ -1,0 +1,8 @@
+{
+  "ERA5_lag": "t-2",
+  "bootstrap_blocks": "14 calendar days",
+  "bootstrap_resamples": 2000,
+  "interval": "percentile 95%",
+  "penalty_selection": "three chronological validation folds at every stage",
+  "group_correction": "TCWV and integrated vapour transport moved to circulation/moisture; near-duplicate tcwv_mean removed"
+}

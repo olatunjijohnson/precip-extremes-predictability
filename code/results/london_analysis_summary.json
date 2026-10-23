@@ -1,0 +1,17 @@
+{
+  "city": "london",
+  "n_train": 7291,
+  "n_test": 3652,
+  "n_test_extremes": 130,
+  "selected_linear_lambda_occ": 100.0,
+  "selected_linear_lambda_tail": 10.0,
+  "linear_xi": -0.020985065028071404,
+  "gp_xi": [
+    -0.03923444449901581,
+    -0.06867038458585739,
+    0.07675746083259583,
+    -0.02990790084004402,
+    -0.061856288462877274
+  ],
+  "seasonal_optimizer_success": true
+}

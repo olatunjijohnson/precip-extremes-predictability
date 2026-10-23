@@ -1,0 +1,7 @@
+city,model,mean_twCRPS,twCRPSS_vs_seasonal
+paris,seasonal occurrence + seasonal intensity,0.04991791435761698,0.0
+paris,linear occurrence + seasonal intensity,0.047746394136043965,0.043501821931421714
+paris,linear occurrence + linear intensity,0.04786206139553825,0.041184672647787135
+paris,GP occurrence + linear intensity,0.04689391087386451,0.060579523857671624
+paris,linear occurrence + GP intensity,0.04735292756854752,0.0513840937081953
+paris,GP occurrence + GP intensity,0.046767219646504474,0.06311751505763263

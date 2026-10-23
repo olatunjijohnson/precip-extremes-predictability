@@ -1,0 +1,17 @@
+{
+  "city": "paris",
+  "n_train": 7291,
+  "n_test": 3652,
+  "n_test_extremes": 211,
+  "selected_linear_lambda_occ": 100.0,
+  "selected_linear_lambda_tail": 1.0,
+  "linear_xi": -0.09191946685314178,
+  "gp_xi": [
+    -0.06397537142038345,
+    -0.042586155235767365,
+    -0.06459787487983704,
+    -0.07288222014904022,
+    -0.10498489439487457
+  ],
+  "seasonal_optimizer_success": true
+}
