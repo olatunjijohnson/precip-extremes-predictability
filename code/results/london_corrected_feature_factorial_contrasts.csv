@@ -1,6 +1,8 @@
 city,contrast,gain,ci_low,ci_high
-london,linear occurrence added to seasonal intensity,0.018876401522394098,0.001217153860599747,0.040547994493838314
-london,linear intensity added with occurrence fixed,0.0004334317420983882,-0.0017338462060441746,0.003411767589752585
-london,GP occurrence replacing linear occurrence; intensity fixed linear,-0.0029597759585999733,-0.009927825210176091,0.002636206677153078
-london,GP intensity replacing linear intensity; occurrence fixed linear,-0.000690841784448227,-0.002404244787286514,0.0008900886251678251
-london,complete GP minus complete linear,-0.004773066434072304,-0.012166045510148535,0.0012328810161726974
+london,linear occurrence added to seasonal intensity,0.018876507458331915,0.001217153860599747,0.040547994493838314
+london,linear intensity added with occurrence fixed,0.0004324916429089278,-0.0017338462060441746,0.003411767589752585
+london,GP occurrence replacing linear occurrence; intensity fixed linear,-0.0029597856365626476,-0.00992784879475928,0.0026362024956959667
+london,GP intensity replacing linear intensity; occurrence fixed linear,-0.000690825791242954,-0.002404241988490494,0.0008901113038282504
+london,GP occurrence replacing linear occurrence; intensity fixed GP,-0.0040822290635520704,-0.011428226081765669,0.0018689594605918248
+london,GP intensity replacing linear intensity; occurrence fixed GP,-0.001813269218232377,-0.0037556132138947397,-0.00010838498764439235
+london,complete GP minus complete linear,-0.004773054854795024,-0.012166035174443025,0.0012328800795086833

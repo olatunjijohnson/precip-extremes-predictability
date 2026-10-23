@@ -73,6 +73,10 @@ def analyse(city):
     specs = {
         "seasonal occurrence + seasonal intensity":
             [(seasonal["pi"], seasonal["sigma"], seasonal["xi"])],
+        "seasonal occurrence + linear intensity":
+            [(seasonal["pi"], linear["sigma"], linear["xi"])],
+        "seasonal occurrence + GP intensity":
+            [(seasonal["pi"], gp_sigma[s], float(gp_xi[s])) for s in range(5)],
         "linear occurrence + seasonal intensity":
             [(linear["pi"], seasonal["sigma"], seasonal["xi"])],
         "linear occurrence + linear intensity":
@@ -81,6 +85,8 @@ def analyse(city):
             [(gp_pi[s], linear["sigma"], linear["xi"]) for s in range(5)],
         "linear occurrence + GP intensity":
             [(linear["pi"], gp_sigma[s], float(gp_xi[s])) for s in range(5)],
+        "GP occurrence + seasonal intensity":
+            [(gp_pi[s], seasonal["sigma"], seasonal["xi"]) for s in range(5)],
         "GP occurrence + GP intensity":
             [(gp_pi[s], gp_sigma[s], float(gp_xi[s])) for s in range(5)],
     }
@@ -107,6 +113,12 @@ def analyse(city):
         ("GP intensity replacing linear intensity; occurrence fixed linear",
          "linear occurrence + GP intensity",
          "linear occurrence + linear intensity"),
+        ("GP occurrence replacing linear occurrence; intensity fixed GP",
+         "GP occurrence + GP intensity",
+         "linear occurrence + GP intensity"),
+        ("GP intensity replacing linear intensity; occurrence fixed GP",
+         "GP occurrence + GP intensity",
+         "GP occurrence + linear intensity"),
         ("complete GP minus complete linear",
          "GP occurrence + GP intensity", "linear occurrence + linear intensity"),
     ]

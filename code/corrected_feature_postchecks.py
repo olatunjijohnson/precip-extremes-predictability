@@ -9,7 +9,7 @@ from major_revision_analysis import city_paths
 from predictor_group_sensitivity import corrected_driver_groups
 from second_review_analyses import (
     N_BOOT, OUT, conditional_calendar_interval, exact_twcrps_parts,
-    fit_penalised_hurdle_cv, moving_block_indices, paired_interval,
+    fit_penalised_hurdle_cv, load_with_drivers, moving_block_indices, paired_interval,
     seasonal_parameters,
 )
 
@@ -57,7 +57,7 @@ def analyse(city):
     rows = []
     for block in (7, 14, 30, 90):
         lo, hi = paired_interval(gps, lin, ref, block=block,
-                                 seed=20261023+block)
+                                 seed=20261023)
         rows.append({"city": city, "comparison": "GP minus linear",
                      "block": f"{block} calendar days",
                      "estimate": (lin.mean()-gps.mean())/ref.mean(),
@@ -88,6 +88,31 @@ def analyse(city):
                      "ci_low": lo, "ci_high": hi})
     pd.DataFrame(rows).to_csv(OUT/f"{city}_corrected_bootstrap_sensitivity.csv",
                               index=False)
+
+    timing_rows = [{"city": city, "latest_ERA5_day": "t-2",
+                    "n_predictors": linear["occurrence_model"].coef_.shape[1],
+                    "twCRPSS": 1-lin.mean()/ref.mean(),
+                    "lambda_occ": linear["lambda_occ"],
+                    "lambda_tail": linear["lambda_tail"], "xi": linear["xi"]}]
+    tele1, moisture1, convective1 = corrected_driver_groups(city, extra_lag=0)
+    data1, dates1, cut1 = load_with_drivers(
+        city, pd.concat([tele1, moisture1, convective1], axis=1))
+    seasonal1 = seasonal_parameters(data1, dates1, cut1)
+    linear1 = fit_penalised_hurdle_cv(
+        data1["X"][:cut1], data1["O"][:cut1], data1["excess"][:cut1],
+        data1["X"][cut1:])
+    index1 = data1["I"][cut1:].numpy()
+    ref1 = exact_twcrps_parts(index1, seasonal1["pi"], seasonal1["sigma"],
+                              seasonal1["xi"])[0]
+    lin1 = exact_twcrps_parts(index1, linear1["pi"], linear1["sigma"],
+                              linear1["xi"])[0]
+    timing_rows.append({"city": city, "latest_ERA5_day": "t-1",
+                        "n_predictors": linear1["occurrence_model"].coef_.shape[1],
+                        "twCRPSS": 1-lin1.mean()/ref1.mean(),
+                        "lambda_occ": linear1["lambda_occ"],
+                        "lambda_tail": linear1["lambda_tail"], "xi": linear1["xi"]})
+    pd.DataFrame(timing_rows).to_csv(
+        OUT/f"{city}_corrected_timing_sensitivity.csv", index=False)
     print(pd.DataFrame(threshold_rows).to_string(index=False), flush=True)
     print(pd.DataFrame(rows).to_string(index=False), flush=True)
 

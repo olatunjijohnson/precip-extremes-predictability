@@ -1,6 +1,8 @@
 city,contrast,gain,ci_low,ci_high
-paris,linear occurrence added to seasonal intensity,0.043501821931421714,0.008836428620351413,0.07410984544615035
-paris,linear intensity added with occurrence fixed,-0.0023171492836346307,-0.017323960523036912,0.010546389989630442
-paris,GP occurrence replacing linear occurrence; intensity fixed linear,0.019394851209884528,0.005298893026626936,0.03388796305782173
-paris,GP intensity replacing linear intensity; occurrence fixed linear,0.010199421060408265,-2.057780859326802e-05,0.021382769077493573
-paris,complete GP minus complete linear,0.021932842409845527,0.003347748744580098,0.03998611511792104
+paris,linear occurrence added to seasonal intensity,0.043500168257790794,0.008836428620351413,0.07410984544615035
+paris,linear intensity added with occurrence fixed,-0.00231439314432924,-0.017323960523036912,0.010546389989630442
+paris,GP occurrence replacing linear occurrence; intensity fixed linear,0.01939481814906801,0.005298899798312589,0.0338878690573978
+paris,GP intensity replacing linear intensity; occurrence fixed linear,0.010199410421786688,-0.000020580776644294638,0.021382718276579706
+paris,GP occurrence replacing linear occurrence; intensity fixed GP,0.011733408577149971,0.0015292430659746656,0.021835489701705974
+paris,GP intensity replacing linear intensity; occurrence fixed GP,0.002538000849868651,-0.003383910791829217,0.00791406273328585
+paris,complete GP minus complete linear,0.02193281899893666,0.003347745962218941,0.039986060875228255

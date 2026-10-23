@@ -16,9 +16,9 @@ from second_review_analyses import (
 )
 
 
-def corrected_driver_groups(city):
+def corrected_driver_groups(city, extra_lag=1):
     """Move moisture transport out of the instability group and drop duplicate TCWV mean."""
-    tele, era, mixed = city_driver_groups(city, extra_lag=1)
+    tele, era, mixed = city_driver_groups(city, extra_lag=extra_lag)
     instability_names = [
         "cape_mean", "cape_max", "cin_mean", "cin_max",
         "kx_mean", "kx_max", "totalx_mean", "totalx_max",
@@ -89,11 +89,10 @@ def analyse(city):
          "history + teleconnections + circulation/moisture", "history + teleconnections"),
         ("published order: add convective", "full",
          "history + teleconnections + circulation/moisture"),
-        ("reversed order: add convective", "history + convective", "history"),
+        ("reversed order: add convective after teleconnections",
+         "history + teleconnections + convective", "history + teleconnections"),
         ("reversed order: add circulation/moisture",
-         "history + convective + circulation/moisture", "history + convective"),
-        ("reversed order: add teleconnections", "full",
-         "history + convective + circulation/moisture"),
+         "full", "history + teleconnections + convective"),
         ("leave out teleconnections", "full",
          "history + convective + circulation/moisture"),
         ("leave out circulation/moisture", "full",

@@ -1,0 +1,3 @@
+city,latest_ERA5_day,n_predictors,twCRPSS,lambda_occ,lambda_tail,xi
+london,t-2,48,0.019308999101240842,100.0,10.0,-0.01960158720612526
+london,t-1,48,0.02784631492444445,100.0,10.0,-0.03179439902305603

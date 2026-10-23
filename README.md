@@ -49,7 +49,7 @@ The central modules are:
 | `code/tcdgp.py` | Sparse variational Gaussian-process GPD hurdle |
 | `code/major_revision_analysis.py` | Seasonal baselines, nested predictor stages, model comparisons, and conditional-amount scores |
 | `code/second_review_analyses.py` | Exact tail-score calculations, controlled occurrence/amount combinations, and sensitivity analyses |
-| `code/corrected_feature_gp_analysis.py` | Final 48-predictor factorial comparison |
+| `code/corrected_feature_gp_analysis.py` | Final 48-predictor, 3-by-3 occurrence-and-amount factorial comparison |
 | `code/predictor_group_sensitivity.py` | Alternative-order and drop-one-group analyses |
 | `code/corrected_gp_structure_sensitivity.py` | Kernel, coregionalisation, inducing-point, and seed checks |
 
@@ -102,6 +102,8 @@ python make_corrected_reliability_figure.py
 Gaussian-process scripts are the slowest part of the workflow and can take
 several hours on a CPU. Random seeds, bootstrap settings, penalties, and the
 1989–2008/2009–2018 split are recorded in the scripts and JSON output files.
+The outputs used for the SERRA submission are preserved in the GitHub release
+tagged `serra-submission-v1.0`.
 
 ## Data provenance and timing
 
